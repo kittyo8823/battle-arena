@@ -16,6 +16,7 @@
 - `tools/build.js`：Card Trail の「音」の区切り（`bgm(k)`・`sfx(k)`・譜面・`E2B64`/`HXB64`）をそのまま切り出し、`src/game.js` と合わせて `index.html`（と公開用の `dist/artifact.html`）を作る。
 - 画面：世界は論理 LW×LH（高さ600、スマホ560）を整数倍 K で描く。絵は Card Trail の SPR を半分（1マス1点）、エリート・ボスは等倍。UI は US 倍した UW×UH（高さ480、スマホ400）の座標で描く（`ui()` で切り替え）。ボタンは毎フレーム `btn()` で登録。
 - `src/game.js` の主な部分：`TH`/`STAGES` 場所（6か所）と地面の絵 `mkTile`、`CHS` キャラ（初めの武器と特長）、`W` 武器（9種・Lv8・`i` が Lv ごとの増分・`evo` 進化＝Lv8＋対の持ち物で宝箱から）、`PS` 持ち物（13種）、`MU` 強化（金貨で買う、localStorage `battlearena_meta`）、`stats()`/`ws()` 能力の計算、`spawner()` 時間で増える敵・1分半ごとのエリート（宝箱）・群れ `swarm`・包囲 `ring`・10/20/25分の主・30分の死神、`fire()` 武器、`lvChoices()` レベルアップの候補、`openChest()` 宝箱、`bankGems()` 遠くの結晶を赤い結晶にまとめる、`later()` 遅らせる処理（setTimeout は使わない）。
+- タイトル `drawTitle()`（月夜の丘に `TS.hero` が立ち、影絵の群れ `TS.horde`、火の粉、1文字ずつ出る題字、メニューは左）、キャラ選択 `drawChar()`（光の台座に等倍×1.5で立たせ、`charGo()` で滑って切り替え、右に説明・能力の棒・初めの武器と進化、下に顔の並び。キャラの色 `col`/`lt`・二つ名 `ep`・紹介 `lore` は `CHS`）。キャラごとの記録 `META.bc`。
 - 操作：WASD／矢印、マウスは押している間その方へ、指は画面のどこでもなぞる（`JOY`）。Esc で一時停止、M で音。
 
 ## 確認
