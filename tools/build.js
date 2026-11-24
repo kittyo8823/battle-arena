@@ -9,9 +9,9 @@ const audio=h.slice(a,z);
 const js=es.buildSync({entryPoints:[path.join(__dirname,'../src/game.js')],bundle:true,minify:true,format:'iife',write:false,loader:{'.json':'json'},target:'es2020',legalComments:'none'}).outputFiles[0].text;
 const html=`<!DOCTYPE html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>戦場（仮題）</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
-<style>html,body{margin:0;height:100%;background:#090b12;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}canvas{position:fixed;left:0;top:0;display:block}#ui{z-index:2}</style>
+<title>Battle Arena</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>html,body{margin:0;height:100%;background:#090b12;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}canvas{position:fixed;display:block;image-rendering:pixelated}</style>
 </head><body>
 <script>
 // Card Trail の音の部品が参照する値（このゲームでは使わないものはダミー）
