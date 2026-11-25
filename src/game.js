@@ -16,7 +16,10 @@ function fit(){const w=innerWidth,h=innerHeight;LH=TOUCH?560:600;LW=cl(Math.roun
 addEventListener('resize',fit);
 const MKC=(w,h)=>{const c=document.createElement('canvas');c.width=Math.max(1,w);c.height=Math.max(1,h);return c};
 const FT='"DotGothic16",monospace',FP='"Press Start 2P",monospace';
-function tx(s,x,y,c,al,sz,f){g.font=(sz||12)+'px '+(f||FT);g.textAlign=al||'left';g.fillStyle='rgba(0,0,0,.45)';g.fillText(s,x+1,y+1);g.fillStyle=c;g.fillText(s,x,y)}
+// ◀▶ は端末によって絵文字になるので、三角を描いて置き換える（ユーザー指定：絵文字のように見えるのは嫌）
+function tx(s,x,y,c,al,sz,f){s=String(s);const z=sz||12;g.font=z+'px '+(f||FT);g.textAlign=al||'left';if(!/[◀▶]/.test(s)){g.fillStyle='rgba(0,0,0,.45)';g.fillText(s,x+1,y+1);g.fillStyle=c;g.fillText(s,x,y);return}
+ const parts=s.split(/([◀▶])/).filter(q=>q!==''),aw=z*.7,ws=parts.map(q=>q==='◀'||q==='▶'?aw:g.measureText(q).width),tw=ws.reduce((a,b)=>a+b,0);let cx=g.textAlign==='center'?x-tw/2:g.textAlign==='right'?x-tw:x;g.textAlign='left';
+ parts.forEach((q,i)=>{if(q==='◀'||q==='▶'){const d=q==='▶'?1:-1,mx=cx+aw/2,my=y-z*.36,h=z*.32;for(const[o,col]of[[1,'rgba(0,0,0,.45)'],[0,c]]){g.fillStyle=col;g.beginPath();g.moveTo(mx+d*h*.8+o,my+o);g.lineTo(mx-d*h*.6+o,my-h+o);g.lineTo(mx-d*h*.6+o,my+h+o);g.fill()}}else{g.fillStyle='rgba(0,0,0,.45)';g.fillText(q,cx+1,y+1);g.fillStyle=c;g.fillText(q,cx,y)}cx+=ws[i]})}
 function box(x,y,w,h,c){g.fillStyle=c||'rgba(12,14,22,.86)';g.fillRect(x,y,w,h)}
 let BTN=[];const btn=(x,y,w,h,f)=>BTN.push({x,y,w,h,f});
 
