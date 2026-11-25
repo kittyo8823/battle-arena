@@ -12,6 +12,7 @@ const r=await p.evaluate(async([stg,chi,god])=>{GM.STG=stg;GM.CHI=chi;GM.newRun(
   if(i%120===0){if(Math.hypot(P.x-(P._ox||0),P.y-(P._oy||0))<20)P._jt=40;P._ox=P.x;P._oy=P.y}if(P._jt>0){P._jt--;mx=Math.cos(i/90);my=Math.sin(i/70)}
   GM.KEY.d=mx>.3?1:0;GM.KEY.a=mx<-.3?1:0;GM.KEY.s=my>.3?1:0;GM.KEY.w=my<-.3?1:0;
   // 近くの弾はダッシュでよける
+  if(b){P.atkq={};P.supq=1}
   if(GM.EB.some(q=>Math.hypot(q.x-P.x,q.y-P.y+14)<40))GM.dash();
   GM.update(1/60);if(R.n!==last){last=R.n;log.push([R.n,Math.round(GM.TIME),R.hits])}}
  return{log,mode:GM.MODE,res:GM.RESULT&&{rooms:GM.RESULT.rooms,hits:GM.RESULT.hits,time:Math.round(GM.RESULT.time),won:GM.RESULT.won,rk:GM.RESULT.rk},ws:GM.P.ws.map(w=>w.k+w.lv),st:R0().st,p:[Math.round(GM.P.x),Math.round(GM.P.y)],dm:GM.P.ws[0].dm,k:GM.KILLS,cell:GM.MAP.G.length,en:GM.EN.filter(e=>!e.dead).map(e=>[e.k,e.tier,Math.round(e.x),Math.round(e.y),Math.round(e.hp)])}},[process.argv[3]||'forest',+(process.argv[4]||0),process.argv[5]!=='0']);
