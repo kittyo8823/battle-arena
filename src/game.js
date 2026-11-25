@@ -56,14 +56,23 @@ function mkTile(t){const S=256,c=MKC(S,S),x=c.getContext('2d');x.fillStyle=t.g[0
 
 /* ===== キャラ ===== */
 const CHS=[
- {k:'pl',w:'sword',hp:120,b:{might:.1},col:'#a8323e',lt:'#ff9a7a',ep:'大兜の戦士',lore:'重い長剣を腰の高さで振り抜く。押し寄せる群れも、ひと薙ぎで道を開く。',d:'筋力に優れた戦士。ダメージ+10%'},
- {k:'si',w:'knife',hp:100,b:{cd:.05,move:.05},col:'#2f6a4a',lt:'#8ae0a8',ep:'外套の影',lore:'包帯の手に短剣を握る。足を止めず、進む先へ刃を投げ続ける。',d:'身軽な毒使い。待ち時間-5%・移動+5%'},
- {k:'sm',w:'moon',hp:110,b:{area:.1},col:'#7a2a34',lt:'#e8a0a8',ep:'居合の剣士',lore:'中段に構えた刀から、三日月の斬撃が飛ぶ。一列に並んだ敵ほど斬りやすい。',d:'居合の剣士。範囲+10%'},
- {k:'nn',w:'book',hp:90,b:{dur:.15,move:-.08},col:'#4a3a7a',lt:'#c0a8ff',ep:'名を捨てた魔導士',lore:'座ったまま、背後の魔導書が勝手に頁をめくる。歩みは遅いが、弾は敵を追う。',d:'老いた魔導士。持続+15%・移動-8%'},
- {k:'hori',w:'dumb',hp:140,b:{regen:.3},col:'#4a6a2a',lt:'#c8f08a',ep:'眠れる力自慢',lore:'迷彩の肌着に緑の杖。放り上げたダンベルが、落ちる先の敵をまとめて潰す。',d:'よく眠る男。最大HPが高く、回復+0.3/秒'},
- {k:'neb',w:'jelly',hp:100,b:{pspd:.15},col:'#2a5a7a',lt:'#8ad8ff',ep:'クラゲを連れた少女',lore:'淡く光るクラゲが周りを巡る。近づくものは触手に絡め取られる。',d:'クラゲを連れた少女。弾の速さ+15%'},
- {k:'seres',w:'spear',hp:100,b:{luck:.2},col:'#8a7a4a',lt:'#fff0c0',ep:'霊騎士を従える少女',lore:'白い頭巾で目を隠す。見えない騎士の光の槍が、敵の頭上から落ちる。',d:'霊騎士を従える少女。幸運+20%'}];
+ {k:'pl',w:'sword',hp:120,b:{might:.1},col:'#a8323e',lt:'#ff9a7a',ep:'大兜の戦士',lore:'重い長剣を腰の高さで振り抜く。押し寄せる群れも、ひと薙ぎで道を開く。',d:'筋力に優れた戦士'},
+ {k:'si',w:'knife',hp:100,b:{cd:.05,move:.05},col:'#2f6a4a',lt:'#8ae0a8',ep:'外套の影',lore:'包帯の手に短剣を握る。足を止めず、進む先へ刃を投げ続ける。',d:'身軽な毒使い'},
+ {k:'sm',w:'moon',hp:110,b:{area:.1},col:'#7a2a34',lt:'#e8a0a8',ep:'居合の剣士',lore:'中段に構えた刀から、三日月の斬撃が飛ぶ。一列に並んだ敵ほど斬りやすい。',d:'居合の剣士'},
+ {k:'nn',w:'book',hp:90,b:{dur:.15,move:-.08},col:'#4a3a7a',lt:'#c0a8ff',ep:'名を捨てた魔導士',lore:'座ったまま、背後の魔導書が勝手に頁をめくる。歩みは遅いが、弾は敵を追う。',d:'老いた魔導士'},
+ {k:'hori',w:'dumb',hp:140,b:{regen:.3},col:'#4a6a2a',lt:'#c8f08a',ep:'眠れる力自慢',lore:'迷彩の肌着に緑の杖。放り上げたダンベルが、落ちる先の敵をまとめて潰す。',d:'よく眠る男'},
+ {k:'neb',w:'jelly',hp:100,b:{pspd:.15},col:'#2a5a7a',lt:'#8ad8ff',ep:'クラゲを連れた少女',lore:'淡く光るクラゲが周りを巡る。近づくものは触手に絡め取られる。',d:'クラゲを連れた少女'},
+ {k:'seres',w:'spear',hp:100,b:{luck:.2},col:'#8a7a4a',lt:'#fff0c0',ep:'霊騎士を従える少女',lore:'白い頭巾で目を隠す。見えない騎士の光の槍が、敵の頭上から落ちる。',d:'霊騎士を従える少女'}];
 
+/* ===== キャラ固有の力（Lv が上がると伸びる。ユーザー指定：本家のようにキャラごとに） ===== */
+const CPV=[
+ {n:'剛力',ic:'burn',d:'ダメージ+10%。Lv10ごとにさらに+10%（最大+50%）',f:(s,l)=>{s.might+=.1+.1*Math.min(4,l/10|0)}},
+ {n:'投げ足',ic:'choker',d:'移動+10%。Lv15で弾の数+1、Lv30でさらに+1',f:(s,l)=>{s.move+=.1;s.amt+=(l>=15?1:0)+(l>=30?1:0)}},
+ {n:'居合の間合い',ic:'kensei',d:'範囲+10%。Lv10ごとに+5%（最大+30%）',f:(s,l)=>{s.area+=.1+.05*Math.min(4,l/10|0)}},
+ {n:'詠唱',ic:'tome',d:'待ち時間-10%。Lv10ごとに-2%（最大-18%）。動きは8%遅い',f:(s,l)=>{s.cd-=.1+.02*Math.min(4,l/10|0);s.move-=.08}},
+ {n:'昼寝',ic:'eyemask',d:'立ち止まると HP がみるみる回復する。最大HP+20%',f:(s,l)=>{s.mhp*=1.2;s.nap=1}},
+ {n:'漂うもの',ic:'insr',d:'弾の速さ+15%。Lv10ごとに持続+10%（最大+40%）',f:(s,l)=>{s.pspd+=.15;s.dur+=.1*Math.min(4,l/10|0)}},
+ {n:'霊騎士の盾',ic:'rcap',d:'幸運+20%。Lv10ごとに受けるダメージ-1（最大-4）',f:(s,l)=>{s.luck+=.2;s.armor+=Math.min(4,l/10|0)}}];
 /* ===== 武器（最大Lv8）。i は Lv2〜8 で増える値 ===== */
 const W={
  sword:{n:'薙ぎ払い',ic:'stsw',d:'向いている方を横に薙ぐ',b:{dmg:12,cd:1.35,amt:1,area:1,spd:1,dur:1,pierce:99},i:[{amt:1},{dmg:5},{dmg:5,area:.1},{dmg:5},{dmg:5,area:.1},{dmg:5},{dmg:5}],evo:{p:'might',n:'覇王の薙ぎ',ic:'burn2'}},
@@ -96,7 +105,7 @@ let CAMX=0,CAMY=0;
 /* ===== 能力の計算 ===== */
 function stats(){const p=P,c=CHS[p.ci==null?CHI:p.ci],s={might:1,armor:0,mhp:c.hp,regen:0,cd:1,area:1,dur:1,amt:0,move:1,magnet:1,luck:1,growth:1,pspd:1,greed:1,crit:0,vamp:0,rev:0,invb:0,es:1,barr:0};
  for(const k in META.up){const u=MU[k],n=META.up[k];if(!u)continue;if(k==='armor')s.armor+=u.v*n;else if(k==='regen')s.regen+=u.v*n;else if(k==='cd')s.cd-=u.v*n;else if(k==='mhp')s.mhp*=1+u.v*n;else s[k]+=u.v*n}
- for(const k in c.b){if(k==='cd')s.cd-=c.b[k];else if(k==='regen')s.regen+=c.b[k];else s[k]+=c.b[k]}
+ {const ci=p.ci==null?CHI:p.ci;CPV[ci].f(s,TX&&TX.lv||1)}
  for(const k in p.pas){const n=p.pas[k];if(k==='might')s.might+=.1*n;else if(k==='armor')s.armor+=n;else if(k==='mhp')s.mhp*=1+.2*n;else if(k==='regen')s.regen+=.2*n;else if(k==='cd')s.cd-=.08*n;else if(k==='area')s.area+=.1*n;else if(k==='dur')s.dur+=.1*n;else if(k==='amt')s.amt+=n;else if(k==='move')s.move+=.1*n;else if(k==='magnet')s.magnet+=.25*n;else if(k==='luck')s.luck+=.1*n;else if(k==='growth')s.growth+=.08*n;else if(k==='pspd')s.pspd+=.1*n;else if(k==='crit')s.crit+=.05*n;else if(k==='vamp')s.vamp+=.03*n;else if(k==='greed')s.greed+=.2*n;else if(k==='rev')s.rev+=n;else if(k==='inv')s.invb+=.1*n;else if(k==='slow')s.es-=.05*n;else if(k==='barr')s.barr=23-3*n}
  s.mhp=Math.round(s.mhp);const om=p.s?p.s.mhp:s.mhp;p.s=s;if(s.mhp>om)p.hp+=s.mhp-om;p.hp=Math.min(p.hp,s.mhp)}
 function ws(w){const d=W[w.k],s=Object.assign({},d.b);for(let i=0;i<w.lv-1;i++)for(const k in d.i[i])s[k]+=d.i[i][k];const ps=P.s;
@@ -171,7 +180,7 @@ function fire(w,s,dt){const p=P;if(FIRE2[w.k])return FIRE2[w.k](w,s,dt,p);
 
 let DQ=[];const later=(t,f)=>DQ.push({t,f,p:P});
 /* ===== 経験・レベルアップ・宝箱 ===== */
-function addXp(v){const p=P;TX.xp+=v*p.s.growth;while(TX.xp>=xpNeed(TX.lv)){TX.xp-=xpNeed(TX.lv);TX.lv++;LVQ++;for(const q of PLS){FX.push({ty:'lvup',x:q.x,y:q.y,t:.6,t0:.6});for(let i=0;i<16;i++)part(q.x+(R()-.5)*30,q.y-R()*20,(R()-.5)*20,-40-R()*60,.8,'255,220,140',1,0);if(q.dead&&MPON){q.dead=0;q.hp=q.s.mhp*.5;q.inv=2;q.dT=0;banner(q.nm+' が起き上がった','',1.4)}}}for(const q of PLS){q.xp=TX.xp;q.lv=TX.lv}if(LVQ&&MODE==='play')openLv()}
+function addXp(v){const p=P;TX.xp+=v*p.s.growth;while(TX.xp>=xpNeed(TX.lv)){TX.xp-=xpNeed(TX.lv);TX.lv++;LVQ++;for(const q of PLS){FX.push({ty:'lvup',x:q.x,y:q.y,t:.6,t0:.6});for(let i=0;i<16;i++)part(q.x+(R()-.5)*30,q.y-R()*20,(R()-.5)*20,-40-R()*60,.8,'255,220,140',1,0);if(q.dead&&MPON){q.dead=0;q.hp=q.s.mhp*.5;q.inv=2;q.dT=0;banner(q.nm+' が起き上がった','',1.4)}}}for(const q of PLS){q.xp=TX.xp;q.lv=TX.lv}{const P0=P;for(const q of PLS){P=q;stats()}P=P0}if(LVQ&&MODE==='play')openLv()}
 function canEvo(w){const d=W[w.k];return !w.evo&&w.lv>=8&&P.pas[d.evo.p]}
 function lvChoices(){const p=P,o=[];
  for(const w of p.ws)if(w.lv<8)o.push({t:'w',k:w.k,wt:10});if(p.ws.length<WSL())for(const k in W)if(!p.ws.some(w=>w.k===k))o.push({t:'w',k,wt:6});
@@ -200,7 +209,7 @@ function update(dt){T+=dt;HURT=Math.max(0,HURT-dt*1.6);if(CHST)CHST.t+=dt;SHAKE*
    else if(MP.down&&!TOUCH){const jx=MP.x-LW/2,jy=MP.y-(LH/2-14);if(hyp(jx,jy)>10){mx=jx;my=jy}}}
   else{mx=p.in[0];my=p.in[1];mv=Math.min(1,hyp(mx,my))}
   if(p.dead){mx=0;my=0;p.dT=(p.dT||0)+dt}const ml=hyp(mx,my);if(ml>.05){const sp=92*p.s.move*mv;p.x+=mx/ml*sp*dt;p.y+=my/ml*sp*dt;p.dx=mx/ml;p.dy=my/ml;if(Math.abs(mx)>.1)p.face=mx>0?1:-1;p.walk+=dt}else p.walk=0;
-  p.inv-=dt;p.hit-=dt;p.hurtT=Math.max(0,(p.hurtT||0)-dt);p.hpLag=p.hpLag==null?p.hp:Math.max(p.hp,p.hpLag-dt*40);p.bar=(p.bar||0)-dt;if(!p.dead)p.hp=Math.min(p.s.mhp,p.hp+p.s.regen*dt)}
+  p.inv-=dt;p.hit-=dt;p.hurtT=Math.max(0,(p.hurtT||0)-dt);p.hpLag=p.hpLag==null?p.hp:Math.max(p.hp,p.hpLag-dt*40);p.bar=(p.bar||0)-dt;p.still=ml>.05?0:(p.still||0)+dt;if(!p.dead)p.hp=Math.min(p.s.mhp,p.hp+(p.s.regen+(p.s.nap&&p.still>.6?2.5+p.s.mhp*.012:0))*dt);if(p.s.nap&&p.still>.6&&R()<dt*3)part(p.x+6,p.y-40,4,-14,1.2,'200,230,255',2,0)}
  P=LP();const p=P;
  spawner(dt);grid();updPT(dt);updTG(dt);updEB(dt);
  for(const q of DQ)q.t-=dt;const dq=DQ.filter(q=>q.t<=0);DQ=DQ.filter(q=>q.t>0);dq.forEach(q=>{P=q.p||P;q.f()});P=LP();
@@ -418,15 +427,17 @@ function drawChest(){const c=CHST,tm=chestTimes(c),t=c.t,cx=UW/2,cy=UH*.84;const
 function chestClose(){if(NETC){if(CHST&&CHST.pi===LPI)netTo(MPS.hid,{ty:'cc'},1);CHST=null;UPT=[];chestJingleEnd();MODE='play';return}MODE='play';CHST=null;UPT=[];chestJingleEnd();if(LVQ>0)openLv()}
 
 /* ===== 持ち物の詳しい説明（左上の欄や一時停止の欄を押すと出る。出ている間は止まる） ===== */
+const wrapL=(s,n)=>{const r=[];for(let i=0;i<s.length;i+=n)r.push(s.slice(i,i+n));return r};
 let INF=null;function openInf(t,k){if(MODE!=='play')return;INF={t,k,t0:T};snd('cl')}
 const PSV={crit:n=>'会心 +'+n*5+'%',vamp:n=>'倒すと '+n*3+'% でHP+1',greed:n=>'金貨 +'+n*20+'%',rev:n=>'起き上がる '+n+'回',inv:n=>'無敵時間 +'+(n/10).toFixed(1)+'秒',slow:n=>'敵の動き -'+n*5+'%',barr:n=>n?(23-3*n)+'秒ごとに1回防ぐ':'なし',might:n=>'ダメージ +'+n*10+'%',armor:n=>'受けるダメージ -'+n,mhp:n=>'最大HP +'+n*20+'%',regen:n=>'HP回復 +'+(n*.2).toFixed(1)+'/秒',cd:n=>'待ち時間 -'+n*8+'%',area:n=>'範囲 +'+n*10+'%',dur:n=>'持続 +'+n*10+'%',amt:n=>'数 +'+n,move:n=>'移動の速さ +'+n*10+'%',magnet:n=>'拾う範囲 +'+n*25+'%',luck:n=>'幸運 +'+n*10+'%',growth:n=>'経験 +'+n*8+'%',pspd:n=>'弾の速さ +'+n*10+'%'};
 function drawInf(){const p=P,I=INF,q=cl((T-I.t0)/.15,0,1),w=Math.min(UW-24,300);let lines=[],ic,nm,lv,d,col,evo=null;
  if(I.t==='w'){const wp=p.ws.find(x=>x.k===I.k);if(!wp){INF=null;return}const D=W[I.k],s=ws(wp);ic=wp.evo?D.evo.ic:D.ic;nm=wp.evo?D.evo.n:D.n;lv=wp.evo?'進化済み':'Lv '+wp.lv+' / 8';d=D.d;col='255,200,80';
   lines=[['ダメージ',Math.round(s.dmg)],['待ち時間',s.cd.toFixed(2)+'秒'],['数',s.amt],['範囲',Math.round(s.area*100)+'%']];if(s.pierce<90)lines.push(['貫通',s.pierce]);if(I.k==='jelly'||I.k==='fire')lines.push(['持続',s.dur.toFixed(1)+'秒']);lines.push(['与えたダメージ',Math.round(wp.dm)]);
   if(!wp.evo&&wp.lv<8)lines.push(['次のLv',WINC(D.i[wp.lv-1])]);evo={n:D.evo.n,ic:D.evo.ic,need:PS[D.evo.p].n,has:!!p.pas[D.evo.p],lv8:wp.lv>=8,done:wp.evo}}
+ else if(I.t==='c'){const cp=CPV[p.ci==null?CHI:p.ci];ic=cp.ic;nm=cp.n;lv='固有の力（'+A.ch[CHS[p.ci==null?CHI:p.ci].k].n+'）';d='';col='255,200,90';lines=wrapL(cp.d,20).map((l,i)=>[i?'':'効果',l]);lines.push(['今の Lv',String(TX.lv)])}
  else{const D=PS[I.k],n=p.pas[I.k]||0;ic=D.ic;nm=D.n;lv='Lv '+n+' / '+D.m;d='1段ごとに '+D.d;col='130,190,255';lines=[['今の効果',PSV[I.k](n)]];if(n<D.m)lines.push(['次のLv',PSV[I.k](n+1)]);const ew=Object.keys(W).find(k=>W[k].evo.p===I.k);if(ew)lines.push(['進化に使う',W[ew].n+' → '+W[ew].evo.n])}
  const h=96+lines.length*17+(evo?40:0);g.fillStyle=`rgba(0,0,0,${.45*q})`;g.fillRect(0,0,UW,UH);const x=(UW-w)/2|0,y=((UH-h)/2|0)+(1-q)*10;g.globalAlpha=q;box(x,y,w,h,'rgba(18,16,24,.96)');g.fillStyle=`rgba(${col},.8)`;g.fillRect(x,y,w,2);
- g.globalCompositeOperation='lighter';g.drawImage(glowC(col),x+4,y+4,60,60);g.globalCompositeOperation='source-over';icon(ic,x+14,y+14,40,I.t==='w'&&evo&&evo.done);tx(nm,x+64,y+30,'#fff2dc','left',15);tx(lv,x+64,y+48,`rgba(${col},1)`,'left',10);tx(I.t==='w'?'武器':'持ち物',x+w-12,y+22,'#8a8498','right',9);
+ g.globalCompositeOperation='lighter';g.drawImage(glowC(col),x+4,y+4,60,60);g.globalCompositeOperation='source-over';icon(ic,x+14,y+14,40,I.t==='w'&&evo&&evo.done);tx(nm,x+64,y+30,'#fff2dc','left',15);tx(lv,x+64,y+48,`rgba(${col},1)`,'left',10);tx(I.t==='w'?'武器':I.t==='c'?'':'持ち物',x+w-12,y+22,'#8a8498','right',9);
  tx(d,x+14,y+74,'#c8cad8','left',10);lines.forEach(([a,b],i)=>{const yy=y+94+i*17;g.fillStyle='rgba(255,255,255,.04)';g.fillRect(x+10,yy-11,w-20,15);tx(a,x+16,yy,'#9a98ac','left',10);tx(String(b),x+w-16,yy,'#ece4d4','right',10)});
  if(evo){const yy=y+h-36;g.fillStyle='rgba(255,210,110,.08)';g.fillRect(x+10,yy-4,w-20,30);icon(evo.ic,x+16,yy,22,1);tx(evo.done?'進化した：'+evo.n:'進化：'+evo.n,x+44,yy+9,'#ffd880','left',10);tx(evo.done?'':`Lv8${evo.lv8?'（済）':''}　＋　${evo.need}${evo.has?'（済）':''}　→　宝箱`,x+44,yy+22,'#b8a890','left',9)}
  tx(TOUCH?'押して閉じる':'クリックで閉じる',UW/2,y+h+16,'#8a8498','center',9);g.globalAlpha=1;btn(0,0,UW,UH,()=>{INF=null})}
@@ -530,8 +541,9 @@ function drawHUD(){const p=P;
  // 武器・持ち物
  const SZ=TOUCH?30:28,GP=SZ+3;
  const slot=(x,y,ic,glow,lv,mx,col,f,sel)=>{box(x,y,SZ,SZ,sel?'rgba(70,56,30,.9)':'rgba(10,12,20,.72)');g.fillStyle=`rgba(${col},.45)`;g.fillRect(x,y,SZ,1);icon(ic,x+3,y+2,SZ-6,glow);const pw=(SZ-4)/mx;for(let j=0;j<mx;j++){g.fillStyle=j<lv?`rgba(${col},1)`:'rgba(255,255,255,.12)';g.fillRect(x+2+j*pw|0,y+SZ-3,Math.max(1,pw-1|0),2)}btn(x,y,SZ,SZ,f)};
- p.ws.forEach((w,i)=>slot(4+i*GP,13,w.evo?W[w.k].evo.ic:W[w.k].ic,w.evo,w.evo?8:w.lv,8,w.evo?'255,210,110':'255,200,80',()=>openInf('w',w.k),INF&&INF.k===w.k));
- Object.keys(p.pas).forEach((k,i)=>slot(4+i*GP,13+GP,PS[k].ic,0,p.pas[k],PS[k].m,'130,190,255',()=>openInf('p',k),INF&&INF.k===k));
+ {const cp=CPV[p.ci==null?CHI:p.ci],x=4,y=13;box(x,y,SZ,SZ*2+3,'rgba(40,30,14,.8)');g.fillStyle='rgba(255,200,90,.7)';g.fillRect(x,y,SZ,1);icon(cp.ic,x+3,y+SZ/2+2,SZ-6,1);btn(x,y,SZ,SZ*2+3,()=>openInf('c',0))}
+ p.ws.forEach((w,i)=>slot(4+(i+1)*GP,13,w.evo?W[w.k].evo.ic:W[w.k].ic,w.evo,w.evo?8:w.lv,8,w.evo?'255,210,110':'255,200,80',()=>openInf('w',w.k),INF&&INF.k===w.k));
+ Object.keys(p.pas).forEach((k,i)=>slot(4+(i+1)*GP,13+GP,PS[k].ic,0,p.pas[k],PS[k].m,'130,190,255',()=>openInf('p',k),INF&&INF.k===k));
  tx('撃破 '+KILLS,UW-8,26,'#e8e0d0','right',12);if(MPON)PLS.forEach((q,i)=>{if(i===LPI)return;const y=82+i*14;tx(q.nm,UW-96,y+4,PCOL[i],'left',9);g.fillStyle='rgba(0,0,0,.5)';g.fillRect(UW-72,y-1,64,5);g.fillStyle=q.dead?'#555':'#d83848';g.fillRect(UW-72,y-1,64*Math.max(0,q.hp)/((q.s&&q.s.mhp)||100),5)});tx('G '+GOLD,UW-8,42,'#ffd860','right',12);
  // 一時停止
  box(UW-34,50,28,20,'rgba(10,12,20,.6)');tx('II',UW-20,64,'#c8d0e0','center',9,FP);btn(UW-42,46,42,30,()=>{if(MODE==='play'&&!INF)PAUSE=!PAUSE});
@@ -541,7 +553,7 @@ function panel(w,h){const x=(UW-w)/2|0,y=(UH-h)/2|0;g.fillStyle='rgba(0,0,0,.45)
 function drawPause(){if(EVL)return drawEvl();const p=P,w=Math.min(UW-20,360),h=310;const[x,y]=panel(w,h);tx('一時停止',UW/2,y+24,'#f0e6c8','center',15);
  p.ws.forEach((wp,i)=>{const yy=y+40+i*20;icon(wp.evo?W[wp.k].evo.ic:W[wp.k].ic,x+12,yy,16,wp.evo);tx((wp.evo?W[wp.k].evo.n:W[wp.k].n)+'  Lv'+wp.lv,x+32,yy+12,'#e8e0d0','left',10);btn(x+8,yy-1,w/2-12,19,()=>openInf('w',wp.k))});
  Object.keys(p.pas).forEach((k,i)=>{const yy=y+40+i*20;icon(PS[k].ic,x+w/2+6,yy,16);tx(PS[k].n+'  Lv'+p.pas[k],x+w/2+26,yy+12,'#e8e0d0','left',10);btn(x+w/2+2,yy-1,w/2-10,19,()=>openInf('p',k))});
- const s=p.s;tx(`力 ${Math.round(s.might*100)}%　鎧 ${s.armor}　最大HP ${s.mhp}　回復 ${s.regen.toFixed(1)}　待ち時間 ${Math.round(s.cd*100)}%`,UW/2,y+180,'#a8b0c0','center',9);tx(`範囲 ${Math.round(s.area*100)}%　持続 ${Math.round(s.dur*100)}%　移動 ${Math.round(s.move*100)}%　磁力 ${Math.round(s.magnet*100)}%　幸運 ${Math.round(s.luck*100)}%`,UW/2,y+194,'#a8b0c0','center',9);
+ {const cp=CPV[p.ci==null?CHI:p.ci];icon(cp.ic,x+12,y+156,16,1);tx('固有の力：'+cp.n,x+32,y+168,'#ffe0a0','left',10);btn(x+8,y+154,w-16,18,()=>openInf('c',0))}const s=p.s;tx(`力 ${Math.round(s.might*100)}%　鎧 ${s.armor}　最大HP ${s.mhp}　回復 ${s.regen.toFixed(1)}　待ち時間 ${Math.round(s.cd*100)}%`,UW/2,y+180,'#a8b0c0','center',9);tx(`範囲 ${Math.round(s.area*100)}%　持続 ${Math.round(s.dur*100)}%　移動 ${Math.round(s.move*100)}%　磁力 ${Math.round(s.magnet*100)}%　幸運 ${Math.round(s.luck*100)}%`,UW/2,y+194,'#a8b0c0','center',9);
  const b=(lab,yy,f,c)=>{box(UW/2-70,yy,140,24,c||'rgba(50,56,80,.95)');tx(lab,UW/2,yy+16,'#fff','center',11);btn(UW/2-70,yy,140,24,f)};b('進化の一覧',y+208,()=>{EVL=1;snd('cl')},'rgba(80,64,30,.95)');b('再開',y+238,()=>{PAUSE=0});if(MPON)b('部屋を抜ける',y+270,()=>{PAUSE=0;mpLeave()},'rgba(90,40,40,.95)');else b('諦める',y+270,()=>{PAUSE=0;P.dead=1;endRun()},'rgba(90,40,40,.95)')}
 // 進化の組み合わせ一覧（一時停止から）：武器 Lv8 ＋ 持ち物 → 宝箱で進化。持っている物は明るく、そろった物は金色
 function drawResult(){if(!RESULT)return;const r=RESULT,w=Math.min(UW-20,380),h=290;const[x,y]=panel(w,h);const ok=r.time>=1800;tx(ok?'生き延びた':'力尽きた',UW/2,y+30,ok?'#ffd860':'#e05a5a','center',18);
@@ -619,12 +631,13 @@ function drawChar(){const c=CHS[SEL],col=c.col,UWs=UW,wide=UW>=640;const t=T-CSL
  if(wide){tx((SEL+1)+' / '+CHS.length,px,py,'#6a7088','left',10,FP);tx(A.ch[c.k].n,px+(1-ee)*12,py+34,'#fff4e0','left',28);tx(c.ep,px,py+56,c.lt,'left',13);
   wrapT(c.lore,px,py+80,pw,'#b8bed0',11,16);
   // 能力
-  const st=[['最大HP',c.hp/140],['ダメージ',1+(c.b.might||0)],['待ち時間',1-(c.b.cd||0)],['範囲',1+(c.b.area||0)],['移動',1+(c.b.move||0)],['持続',1+(c.b.dur||0)],['弾の速さ',1+(c.b.pspd||0)],['幸運',1+(c.b.luck||0)]].filter((s,i)=>i<2||s[1]!==1);
-  st.forEach(([n,v],i)=>{const y=py+120+i*17;tx(n,px,y+8,'#9098b0','left',10);const bw=pw-110;g.fillStyle='rgba(255,255,255,.07)';g.fillRect(px+70,y,bw,6);const f=n==='最大HP'?v:v/1.3;g.fillStyle=v>1||n==='待ち時間'&&v<1?c.lt:'#8890a8';g.fillRect(px+70,y,bw*cl(f,0,1)*Math.min(1,t*3),6);tx(n==='最大HP'?String(c.hp):Math.round(v*100)+'%',px+pw,y+8,'#e8e0d0','right',10)});
+  const ss={might:1,cd:1,area:1,move:1,dur:1,pspd:1,luck:1,mhp:c.hp,armor:0,amt:0,regen:0};CPV[SEL].f(ss,1);const st=[['最大HP',ss.mhp/170],['ダメージ',ss.might],['待ち時間',ss.cd],['範囲',ss.area],['移動',ss.move],['持続',ss.dur],['弾の速さ',ss.pspd],['幸運',ss.luck]].filter((s,i)=>i<2||Math.abs(s[1]-1)>.001);
+  st.forEach(([n,v],i)=>{const y=py+120+i*17;tx(n,px,y+8,'#9098b0','left',10);const bw=pw-110;g.fillStyle='rgba(255,255,255,.07)';g.fillRect(px+70,y,bw,6);const f=n==='最大HP'?v:v/1.3;g.fillStyle=v>1||n==='待ち時間'&&v<1?c.lt:'#8890a8';g.fillRect(px+70,y,bw*cl(f,0,1)*Math.min(1,t*3),6);tx(n==='最大HP'?String(Math.round(ss.mhp)):Math.round(v*100)+'%',px+pw,y+8,'#e8e0d0','right',10)});
   // 初めの武器
   const wy=py+128+st.length*17;const w=W[c.w];box(px,wy,pw,64,'rgba(255,255,255,.04)');g.fillStyle=hexA(c.lt,.6);g.fillRect(px,wy,2,64);icon(w.ic,px+10,wy+8,30);tx('初めの武器',px+48,wy+14,'#7a8098','left',9);tx(w.n,px+48,wy+30,'#f0e6c8','left',13);tx(w.d,px+48,wy+46,'#a8b0c4','left',10);
   icon(w.evo.ic,px+pw-28,wy+8,20,1);tx('進化',px+pw-18,wy+40,'#c8a860','center',9);tx(w.evo.n,px+pw-18,wy+53,'#e0c888','center',9);
-  const r=META.bc&&META.bc[SEL];if(r)tx(`最長生存 ${mm(r.t)}　最高 Lv${r.lv}　撃破 ${r.k}`,px,wy+82,'#8890a8','left',10)}
+  {const cp=CPV[SEL],yy=wy+72;box(px,yy,pw,46,'rgba(255,200,90,.06)');g.fillStyle='rgba(255,200,90,.7)';g.fillRect(px,yy,2,46);icon(cp.ic,px+10,yy+8,28,1);tx('固有の力',px+46,yy+14,'#a89060','left',9);tx(cp.n,px+46,yy+29,'#ffe0a0','left',12);tx(cp.d,px+46+g.measureText(cp.n).width*0+0,yy+42,'#c8c0b0','left',9)}
+  const r=META.bc&&META.bc[SEL];if(r)tx(`最長生存 ${mm(r.t)}　最高 Lv${r.lv}　撃破 ${r.k}`,px,wy+134,'#8890a8','left',10)}
  else{tx(A.ch[c.k].n,UW/2,py,'#fff4e0','center',22);tx(c.ep,UW/2,py+20,c.lt,'center',12);const w=W[c.w];icon(w.ic,UW/2-110,py+30,22);tx(w.n+'：'+w.d,UW/2-82,py+46,'#d8d0c0','left',11)}
  g.globalAlpha=1;
  // 下の顔の並び
