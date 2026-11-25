@@ -453,7 +453,7 @@ function wrapC(s,x,y,w,c,sz,lh,max){g.font=sz+'px '+FT;const L=[];let line='';fo
 function drawLv(){const t=T-LVA.t0,n=LVO.length;g.fillStyle=`rgba(5,3,8,${Math.min(.74,t*3)})`;g.fillRect(0,0,UW,UH);
  g.save();g.translate(UW/2,UH*.5);g.rotate(T*.12);g.globalCompositeOperation='lighter';for(let i=0;i<14;i++){g.rotate(TAU/14);g.fillStyle=`rgba(255,190,100,${.045*Math.min(1,t*2)})`;g.beginPath();g.moveTo(0,0);g.lineTo(-40,-UW);g.lineTo(40,-UW);g.fill()}g.restore();g.globalCompositeOperation='source-over';
  const k=cl(t/.28,0,1),e=1-Math.pow(1-k,3),sz=Math.min(30,UW/18)*(1.7-.7*e);g.font=sz+'px '+FP;g.textAlign='center';g.globalAlpha=e;const ty=UH*.15;for(let i=4;i>0;i--){g.fillStyle='#3a1a04';g.fillText((RM?'REWARD':'LEVEL UP'),UW/2+i*.7,ty+i)}const gd=g.createLinearGradient(0,ty-sz,0,ty);gd.addColorStop(0,'#fff6d0');gd.addColorStop(.5,'#ffc850');gd.addColorStop(1,'#c87818');g.fillStyle=gd;g.fillText((RM?'REWARD':'LEVEL UP'),UW/2,ty);g.globalAlpha=1;
- tx('Lv '+(P.lv-LVQ),UW/2,ty+20,'#d8c8a0','center',12);
+ tx(RM?'1つ選ぶ':'Lv '+(P.lv-LVQ),UW/2,ty+20,'#d8c8a0','center',12);
  const gap=10,cw=Math.min(150,(UW-30-(n-1)*gap)/n),ch=Math.min(220,UH*.62),x0=UW/2-(n*cw+(n-1)*gap)/2,y0=UH*.24;LVR=[];
  LVO.forEach((o,i)=>{const r=optInfo(o),dl=.15+i*.09,a=cl((t-dl)/.32,0,1),ee=1-Math.pow(1-a,3)*(1-a*.0);if(a<=0)return;let x=x0+i*(cw+gap),y=y0+(1-ee)*70,al=ee;const on=SEL===i;
   if(on)y-=5+Math.sin(T*4)*1.5;
@@ -464,11 +464,11 @@ function drawLv(){const t=T-LVA.t0,n=LVO.length;g.fillStyle=`rgba(5,3,8,${Math.m
   // 光が走る
   if(on){const sx=x+((T*120)%(cw+60))-30;g.save();g.beginPath();g.rect(x,y,cw,ch);g.clip();g.fillStyle='rgba(255,255,255,.07)';g.beginPath();g.moveTo(sx,y);g.lineTo(sx+18,y);g.lineTo(sx-22,y+ch);g.lineTo(sx-40,y+ch);g.fill();g.restore()}
   // 上：新しい／段の目盛り
-  const isNew=r.lv.startsWith('新');if(isNew){g.fillStyle='#2e8a50';g.beginPath();g.moveTo(x+8,y+8);g.lineTo(x+48,y+8);g.lineTo(x+44,y+22);g.lineTo(x+4,y+22);g.fill();tx('NEW',x+26,y+19,'#e8ffe8','center',8,FP)}
+  const isNew=r.lv.startsWith('新')||r.lv.startsWith('必殺');if(isNew){g.fillStyle='#2e8a50';g.beginPath();g.moveTo(x+8,y+8);g.lineTo(x+48,y+8);g.lineTo(x+44,y+22);g.lineTo(x+4,y+22);g.fill();tx('NEW',x+26,y+19,'#e8ffe8','center',8,FP)}
   else if(o.t==='w'||o.t==='p'){const mx=o.t==='w'?8:PS[o.k].m,cur=o.t==='w'?P.ws.find(w=>w.k===o.k).lv:P.pas[o.k],pw=Math.min(9,(cw-20)/mx);for(let j=0;j<mx;j++){const px=x+cw/2-mx*pw/2+j*pw;g.fillStyle=j<cur?`rgba(${tc},.9)`:j===cur?((T*4|0)%2?'#fff4c0':`rgba(${tc},.4)`):'rgba(255,255,255,.1)';g.fillRect(px+1,y+12,pw-2,5)}}
   // 絵
   const iy=y+ch*.2,is=Math.min(48,cw*.4);g.globalCompositeOperation='lighter';g.globalAlpha=al*.6;g.drawImage(glowC(tc),x+cw/2-is,iy-is*.2,is*2,is*1.6);g.globalCompositeOperation='source-over';g.globalAlpha=al;icon(r.ic,x+cw/2-is/2,iy,is);
-  tx(r.n,x+cw/2,iy+is+22,'#fff2dc','center',13);tx(o.t==='w'?'武器':o.t==='p'?'持ち物':'',x+cw/2,iy+is+37,`rgba(${tc},1)`,'center',9);
+  tx(r.n,x+cw/2,iy+is+22,'#fff2dc','center',13);tx(o.t==='w'?(RM?(P.ws.some(w=>w.k===o.k)?(P.ws[0].k===o.k?'通常攻撃':'必殺技'):'必殺技にする'):'武器'):o.t==='p'?'持ち物':'',x+cw/2,iy+is+37,`rgba(${tc},1)`,'center',9);
   // 一度でも進化させたことがある組み合わせは、札の下に小さく出す
   let hint=null;const evd=META.evd||{};if(o.t==='p'){const wk=Object.keys(W).find(k=>W[k].evo.p===o.k&&evd[k]);if(wk)hint={a:W[wk].ic,b:W[wk].evo.ic,n:W[wk].n,on:P.ws.some(w=>w.k===wk)}}else if(o.t==='w'&&evd[o.k]){const D=W[o.k];hint={a:PS[D.evo.p].ic,b:D.evo.ic,n:PS[D.evo.p].n,on:!!P.pas[D.evo.p]}}
   wrapC(r.d,x+cw/2,iy+is+56,cw-16,'#c0c4d4',10,14,hint?3:4);
