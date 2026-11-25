@@ -786,7 +786,7 @@ function drawHUD(){const p=P;
  // 経験
  g.fillStyle='#10131c';g.fillRect(0,0,UW,5);g.fillStyle='#3a6ad8';g.fillRect(0,0,UW*Math.min(1,TX.xp/xpNeed(TX.lv)),5);
  // 波と本塔
- if(WV){const wl=WV.n===0?'まもなく第1波':'第'+WV.n+'波 / '+NWAVE,nx=WV.n>0&&WV.n<NWAVE&&WV.t<60?'　次まで '+Math.ceil(WV.t)+'秒':'';g.font='12px '+FT;const ww=g.measureText(wl+nx).width+20;box(UW/2-ww/2,9,ww,17,'rgba(6,8,14,.6)');tx(wl+nx,UW/2,22,'#f0e6d8','center',12);const m=TW[0];if(m){const w=Math.min(260,UW*.34),x=UW/2-w/2;g.fillStyle='rgba(6,10,20,.75)';g.fillRect(x-3,27,w+6,11);g.fillStyle='#14203a';g.fillRect(x,29,w,7);g.fillStyle=m.hp/m.mhp<.3&&(T*4|0)%2?'#ff6050':'#4a90f0';g.fillRect(x,29,w*m.hp/m.mhp,7);g.fillStyle='rgba(255,255,255,.3)';g.fillRect(x,29,w*m.hp/m.mhp,1);tx('本塔',x-6,36,'#a8c8ff','right',9);if(m.fl>0){g.fillStyle='rgba(255,80,60,.4)';g.fillRect(x,29,w,7)}}}
+ if(WV){const nb=Math.floor(WV.n/5)*5+5,bt=WV.n===0?0:WV.t+(nb-WV.n-1)*60,wl=WV.n===0?'敵が来るまで '+Math.ceil(WV.t)+'秒':mm(WV.n>=NWAVE?(NWAVE-1)*60+WV.st:Math.max(0,(WV.n-1)*60+60-WV.t)),nx=WV.n===0?'':WV.n>=NWAVE?'　最後の主':'　主まで '+mm(bt);g.font='12px '+FT;const ww=g.measureText(wl+nx).width+20;box(UW/2-ww/2,9,ww,17,'rgba(6,8,14,.6)');tx(wl+nx,UW/2,22,'#f0e6d8','center',12);const m=TW[0];if(m){const w=Math.min(260,UW*.34),x=UW/2-w/2;g.fillStyle='rgba(6,10,20,.75)';g.fillRect(x-3,27,w+6,11);g.fillStyle='#14203a';g.fillRect(x,29,w,7);g.fillStyle=m.hp/m.mhp<.3&&(T*4|0)%2?'#ff6050':'#4a90f0';g.fillRect(x,29,w*m.hp/m.mhp,7);g.fillStyle='rgba(255,255,255,.3)';g.fillRect(x,29,w*m.hp/m.mhp,1);tx('本塔',x-6,36,'#a8c8ff','right',9);if(m.fl>0){g.fillStyle='rgba(255,80,60,.4)';g.fillRect(x,29,w,7)}}}
  {const gx=UW-MMW()-16;g.drawImage(COIN,gx-74,10,11,11);tx(String(Math.floor(p.gold||0)),gx,20,'#ffd860','right',12,FP);tx('Lv '+TX.lv,gx,36,'#c8d0e0','right',9,FP)}
  if(p.dead&&p.rsp!=null&&!DEATH){tx('本塔で復活まで '+Math.ceil(p.rsp)+' 秒',UW/2,UH*.4,'#ffb0a0','center',14)}
  TOAST.slice(-3).forEach((t2,i)=>{const a=Math.min(1,t2.t*2);g.globalAlpha=a;g.font='11px '+FT;const w=g.measureText(t2.s).width+20;box(UW/2-w/2,UH-74-i*22,w,18,'rgba(40,30,10,.85)');tx(t2.s,UW/2,UH-61-i*22,'#ffe0a0','center',11);g.globalAlpha=1});
@@ -812,7 +812,7 @@ function drawPause(){if(EVL)return drawEvl();const p=P,w=Math.min(UW-20,360),h=3
  const b=(lab,yy,f,c)=>{box(UW/2-70,yy,140,24,c||'rgba(50,56,80,.95)');tx(lab,UW/2,yy+16,'#fff','center',11);btn(UW/2-70,yy,140,24,f)};b('進化の一覧',y+208,()=>{EVL=1;snd('cl')},'rgba(80,64,30,.95)');{const bx2=UW/2+76;box(bx2,y+238,60,24,'rgba(50,56,80,.95)');tx('音量',bx2+30,y+254,'#fff','center',11);btn(bx2,y+238,60,24,()=>{VOLP=1;snd('cl')})}b('再開',y+238,()=>{PAUSE=0});if(MPON)b('部屋を抜ける',y+270,()=>{PAUSE=0;mpLeave()},'rgba(90,40,40,.95)');else b('諦める',y+270,()=>{PAUSE=0;P.dead=1;endRun()},'rgba(90,40,40,.95)')}
 // 進化の組み合わせ一覧（一時停止から）：武器 Lv8 ＋ 持ち物 → 宝箱で進化。持っている物は明るく、そろった物は金色
 function drawResult(){if(!RESULT)return;const r=RESULT,w=Math.min(UW-20,380),h=290;const[x,y]=panel(w,h);const ok=r.won;tx(ok?'守り抜いた':'本塔が崩れた',UW/2,y+30,ok?'#ffd860':'#e05a5a','center',18);
- tx(`${TM.n}　${A.ch[CHS[CHI].k].n}`,UW/2,y+50,'#b8b0a8','center',10);tx(`第${r.wn}波まで　${mm(r.time)}　Lv ${r.lv}　撃破 ${r.kills}　金貨 +${r.gold}`,UW/2,y+70,'#f0e6c8','center',12);
+ tx(`${TM.n}　${A.ch[CHS[CHI].k].n}`,UW/2,y+50,'#b8b0a8','center',10);tx(`${mm(r.time)}　Lv ${r.lv}　撃破 ${r.kills}　金貨 +${r.gold}`,UW/2,y+70,'#f0e6c8','center',12);
  tx('武器',x+20,y+94,'#8890a0','left',9);tx('与えたダメージ',x+w-20,y+94,'#8890a0','right',9);r.ws.forEach((wp,i)=>{const yy=y+100+i*22;icon(wp.evo?W[wp.k].evo.ic:W[wp.k].ic,x+18,yy,18,wp.evo);tx((wp.evo?W[wp.k].evo.n:W[wp.k].n)+'  Lv'+wp.lv,x+42,yy+13,'#e8e0d0','left',10);tx(String(Math.round(wp.dm)),x+w-20,yy+13,'#e8e0d0','right',10)});
  box(UW/2-70,y+h-36,140,26,'rgba(50,56,80,.95)');tx(MPS.code?'部屋に戻る':'戻る',UW/2,y+h-18,'#fff','center',12);btn(UW/2-70,y+h-36,140,26,()=>{if(MPS.code&&NET.kind){MPON=0;NETC=0;MPS.started=0;PLS=[];MODE='lobby';music('t');if(MPS.host)lobSend()}else{MODE='title';music('t')}})}
 function bgScene(){g.fillStyle='#0a0c14';g.fillRect(0,0,UW,UH);if(TILE){g.globalAlpha=.35;for(let x=0;x<UW;x+=TILE.width)for(let y=0;y<UH;y+=TILE.height)g.drawImage(TILE,x,y);g.globalAlpha=1}}
@@ -942,7 +942,7 @@ function drawStage(){const k=STAGES[SEL],t=TH[k],ar=A.AR.find(a=>a.k===k),e2=cl(
  g.restore();g.fillStyle='rgba(255,214,110,.6)';g.fillRect(px,py,pw,1);g.fillRect(px,py+ph-1,pw,1);
  // 名前と説明
  g.globalAlpha=ee;tx(t.n,px+16+(1-ee)*20,py+40,'#fff4e0','left',26);tx(t.sub,px+18,py+60,'#d0c8b8','left',11);g.globalAlpha=1;
- const bw=META.bw&&META.bw[k];tx(bw?(bw>NWAVE?'守り抜いた':'最高 第'+bw+'波'):'未踏',px+pw-12,py+22,bw>NWAVE?'#ffd860':'#a8b0c0','right',11);
+ const bw=META.bw&&META.bw[k];tx(bw?(bw>NWAVE?'守り抜いた':'最高 '+bw+'分'):'未踏',px+pw-12,py+22,bw>NWAVE?'#ffd860':'#a8b0c0','right',11);
  // 出る敵・主
  const ry=py+ph-46;box(px+8,ry,pw-16,38,'rgba(8,8,12,.7)');tx('出る敵',px+16,ry+14,'#8a8498','left',9);ar.nm.slice(0,Math.floor((pw-200)/30)).forEach((ek,j)=>{const s=eSpr(ek,0);if(s.ok){const k2=Math.min(26/s.w,26/s.h);g.drawImage(s.f,px+16+j*30,ry+36-s.h*k2|0,s.w*k2|0,s.h*k2|0)}});
  tx('主',px+pw-150,ry+14,'#c86060','left',9);ar.bo.slice(0,3).forEach((gr,j)=>{const ek=gr[gr.length>>1],s=eSpr(ek,0);if(s.ok){const k2=Math.min(30/s.w,30/s.h);g.drawImage(s.f,px+pw-150+j*44,ry+37-s.h*k2|0,s.w*k2|0,s.h*k2|0)}});
@@ -950,7 +950,7 @@ function drawStage(){const k=STAGES[SEL],t=TH[k],ar=A.AR.find(a=>a.k===k),e2=cl(
  tx('場所を選ぶ',wide?lw/2+10:UW/2,26,'#c8c0b0','center',13);
  STAGES.forEach((kk,i)=>{const tt=TH[kk],on=SEL===i;let x,y,w,h;if(wide){w=lw;h=Math.min(52,(UH-120)/6-6);x=12+(on?8:0);y=40+i*(h+6)}else{w=(UW-24)/3-4;h=34;x=12+(i%3)*(w+6);y=py+ph+8+(i/3|0)*(h+6)}
   if(!THT[kk])THT[kk]=mkTile(tt);g.save();g.beginPath();g.rect(x,y,w,h);g.clip();g.globalAlpha=on?1:.55;g.drawImage(THT[kk],x,y-20);g.globalAlpha=1;const gr=g.createLinearGradient(x,0,x+w,0);gr.addColorStop(0,'rgba(0,0,0,.7)');gr.addColorStop(1,'rgba(0,0,0,.1)');g.fillStyle=gr;g.fillRect(x,y,w,h);g.restore();
-  if(on){g.fillStyle='#e8c060';g.fillRect(x,y,3,h);g.fillStyle='rgba(255,214,110,.5)';g.fillRect(x,y,w,1);g.fillRect(x,y+h-1,w,1)}tx(tt.n,x+12,y+h/2+5,on?'#fff4e0':'#a8a0a0','left',wide?13:11);const b2=META.bw&&META.bw[kk];if(b2&&wide)tx(b2>NWAVE?'制覇':'第'+b2+'波',x+w-8,y+h/2+4,b2>NWAVE?'#ffd860':'#7a7a88','right',9);
+  if(on){g.fillStyle='#e8c060';g.fillRect(x,y,3,h);g.fillStyle='rgba(255,214,110,.5)';g.fillRect(x,y,w,1);g.fillRect(x,y+h-1,w,1)}tx(tt.n,x+12,y+h/2+5,on?'#fff4e0':'#a8a0a0','left',wide?13:11);const b2=META.bw&&META.bw[kk];if(b2&&wide)tx(b2>NWAVE?'制覇':b2+'分',x+w-8,y+h/2+4,b2>NWAVE?'#ffd860':'#7a7a88','right',9);
   btn(x,y,w,h,()=>{if(SEL===i&&!TOUCH){STG=kk;newRun()}else stageGo(i)})});
  const b=(lab,x,y,w,f,c)=>{g.fillStyle=c;g.beginPath();g.moveTo(x+8,y);g.lineTo(x+w,y);g.lineTo(x+w-8,y+28);g.lineTo(x,y+28);g.fill();tx(lab,x+w/2,y+19,'#fff','center',12);btn(x,y,w,28,f)};
  b('◀ 戻る',12,UH-38,100,()=>{MODE='char';SEL=CHI},'rgba(40,44,64,.92)');const pu=.8+.2*Math.sin(T*3);b('出発する',UW-152,UH-38,140,()=>{STG=STAGES[SEL];newRun()},`rgba(192,40,28,${pu})`)}
