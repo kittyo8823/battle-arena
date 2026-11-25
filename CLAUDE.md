@@ -9,6 +9,7 @@
 - 小さく動くものから作り、見せてから広げる。
 - 絵・UI は Card Trail の書き方のルールに合わせる（輪郭は付けないか薄く、安っぽい星形の光を使わない、落ち着いた文体）。
 - 画面は2Dの真上視点（ユーザーが選んだ）。
+- **公開版（`main` ＝ GitHub Pages https://kittyo8823.github.io/battle-arena/ ）への反映は、ユーザーが「アプデして」と言った時だけ**（ユーザー指定）。ふだんの変更は作業用のブランチ `dev` にコミットして push しておき（作業が消えないように）、確認用にアーティファクトを公開し直す。「アプデして」と言われたら `dev` を `main` に取り込んで push する。
 
 ## 作り
 - 準備：`card-trail` を隣にクローン（`../card-trail/dev/index.html`）し、`npm i`（esbuild）。テストは Playwright（環境に入っているもの、`NODE_PATH=$(npm root -g)`）。
