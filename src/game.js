@@ -22,7 +22,7 @@ let BTN=[];const btn=(x,y,w,h,f)=>BTN.push({x,y,w,h,f});
 
 /* ===== 絵（Card Trail の SPR を半分＝1マス1点にして使う） ===== */
 const SP={};/* k → {n,f,wn,wf,w,h} */
-function sprite(url,sc){const key=url.length+url.slice(-48)+sc;if(SP[key])return SP[key];const o=SP[key]={ok:0};const im=new Image();im.onload=()=>{const w=Math.round(im.width*sc),h=Math.round(im.height*sc);
+function sprite(url,sc){const key=url.length+url.slice(-48)+sc;if(SP[key])return SP[key];const o=SP[key]={ok:0};const im=new Image();im.onload=()=>{let ih=im.height;try{const t=MKC(im.width,im.height),tx2=t.getContext('2d');tx2.drawImage(im,0,0);const d=tx2.getImageData(0,0,im.width,im.height).data;let b=im.height-1;out:for(;b>0;b--){for(let i=0;i<im.width;i++)if(d[(b*im.width+i)*4+3]>20)break out}ih=b+1}catch(e){}const w=Math.round(im.width*sc),h=Math.round(ih*sc);
  const mk=(fl,wh)=>{const c=MKC(w,h),x=c.getContext('2d');x.imageSmoothingEnabled=false;if(fl){x.translate(w,0);x.scale(-1,1)}x.drawImage(im,0,0,w,h);if(wh){x.setTransform(1,0,0,1,0,0);x.globalCompositeOperation='source-in';x.fillStyle='#fff';x.fillRect(0,0,w,h)}return c};
  Object.assign(o,{n:mk(0,0),f:mk(1,0),wn:mk(0,1),wf:mk(1,1),w,h,ok:1})};im.src=url;return o}
 const eSpr=(k,tier)=>sprite(A.spr[k],tier>=1?1:.5),cSpr=k=>sprite(A.ch[k].img,.5);
@@ -193,7 +193,7 @@ const WSL=()=>[6,4,3,3][Math.max(0,NP-1)]||3;let LVW=null,TX={lv:1,xp:0},LVT=0,N
 function takeOpt(o){const p=P;if(o.t==='w'){const w=p.ws.find(w=>w.k===o.k);if(w)w.lv++;else p.ws.push({k:o.k,lv:1,t:.2,dm:0,oi:p.pi||0})}else if(o.t==='p'){p.pas[o.k]=(p.pas[o.k]||0)+1;stats()}else if(o.t==='g')GOLD+=25;else if(o.t==='h')p.hp=Math.min(p.s.mhp,p.hp+30)}
 function optInfo(o){if(o.t==='w'){const d=W[o.k],w=P.ws.find(w=>w.k===o.k);return{ic:d.ic,n:d.n,lv:w?'Lv'+(w.lv+1):'新しい武器',d:w?WINC(d.i[w.lv-1]):d.d}}if(o.t==='p'){const d=PS[o.k],n=P.pas[o.k]||0;return{ic:d.ic,n:d.n,lv:n?'Lv'+(n+1):'新しい持ち物',d:d.d}}return o.t==='g'?{ic:'purse',n:'金貨',lv:'',d:'金貨+25'}:{ic:'onigiri',n:'おにぎり',lv:'',d:'HP+30'}}
 function openChest(big){const p=P,n=big?(R()<.3*p.s.luck?5:3):(R()<.08*p.s.luck?3:1),items=[];
- for(let i=0;i<n;i++){const ev=p.ws.find(canEvo);if(ev){ev.evo=1;items.push({ev:1,k:ev.k});continue}const up=p.ws.filter(w=>w.lv<8).map(w=>({t:'w',k:w.k})).concat(Object.keys(p.pas).filter(k=>p.pas[k]<PS[k].m).map(k=>({t:'p',k})));if(up.length){const o=pk(up);items.push(Object.assign({info:optInfo(o)},o));takeOpt(o)}else{items.push({t:'g',info:optInfo({t:'g'})});takeOpt({t:'g'})}}
+ for(let i=0;i<n;i++){const ev=p.ws.find(canEvo);if(ev){ev.evo=1;META.evd=META.evd||{};if(!META.evd[ev.k]){META.evd[ev.k]=1;LS.set('battlearena_meta',META)}items.push({ev:1,k:ev.k});continue}const up=p.ws.filter(w=>w.lv<8).map(w=>({t:'w',k:w.k})).concat(Object.keys(p.pas).filter(k=>p.pas[k]<PS[k].m).map(k=>({t:'p',k})));if(up.length){const o=pk(up);items.push(Object.assign({info:optInfo(o)},o));takeOpt(o)}else{items.push({t:'g',info:optInfo({t:'g'})});takeOpt({t:'g'})}}
  const gold=Math.round((big?60:20)*(1+TIME/600)*p.s.greed);GOLD+=gold;CHST={items,gold,t:0,big,ev:items.some(i=>i.ev),pi:p.pi||0};UPT=[];ULT=T;MODE='chest';snd('cl');chestJingle(CHST);if(MPON)netAll({ty:'ch',c:{items:items.map(i=>({ev:i.ev,k:i.k,info:i.info})),gold,big,ev:CHST.ev,pi:CHST.pi}},1)}
 
 /* ===== 更新 ===== */
@@ -353,7 +353,12 @@ function drawLv(){const t=T-LVA.t0,n=LVO.length;g.fillStyle=`rgba(5,3,8,${Math.m
   // 絵
   const iy=y+ch*.2,is=Math.min(48,cw*.4);g.globalCompositeOperation='lighter';g.globalAlpha=al*.6;g.drawImage(glowC(tc),x+cw/2-is,iy-is*.2,is*2,is*1.6);g.globalCompositeOperation='source-over';g.globalAlpha=al;icon(r.ic,x+cw/2-is/2,iy,is);
   tx(r.n,x+cw/2,iy+is+22,'#fff2dc','center',13);tx(o.t==='w'?'武器':o.t==='p'?'持ち物':'',x+cw/2,iy+is+37,`rgba(${tc},1)`,'center',9);
-  wrapC(r.d,x+cw/2,iy+is+56,cw-16,'#c0c4d4',10,14,4);if(!isNew&&r.lv)tx(r.lv,x+cw/2,y+ch-12,'#d8c8a0','center',9);if(!TOUCH)tx(String(i+1),x+10,y+ch-10,'#5a5470','left',9,FP);
+  // 一度でも進化させたことがある組み合わせは、札の下に小さく出す
+  let hint=null;const evd=META.evd||{};if(o.t==='p'){const wk=Object.keys(W).find(k=>W[k].evo.p===o.k&&evd[k]);if(wk)hint={a:W[wk].ic,b:W[wk].evo.ic,n:W[wk].n,on:P.ws.some(w=>w.k===wk)}}else if(o.t==='w'&&evd[o.k]){const D=W[o.k];hint={a:PS[D.evo.p].ic,b:D.evo.ic,n:PS[D.evo.p].n,on:!!P.pas[D.evo.p]}}
+  wrapC(r.d,x+cw/2,iy+is+56,cw-16,'#c0c4d4',10,14,hint?3:4);
+  if(hint){const hy=y+ch-44,hw=cw-16,hx=x+8;g.fillStyle=hint.on?'rgba(255,200,90,.18)':'rgba(255,255,255,.05)';g.fillRect(hx,hy,hw,22);g.fillStyle=hint.on?'rgba(255,210,110,.8)':'rgba(255,210,110,.3)';g.fillRect(hx,hy,hw,1);
+   if(hint.on){g.globalCompositeOperation='lighter';g.globalAlpha=.35+.2*Math.sin(T*5);g.drawImage(glowC('255,200,90'),hx,hy-6,hw,34);g.globalAlpha=1;g.globalCompositeOperation='source-over'}
+   const cx2=hx+hw/2;tx('進化',hx+4,hy+14,'#c8a860','left',8);icon(hint.a,cx2-24,hy+3,16);tx('→',cx2+2,hy+15,'#a89878','center',9);icon(hint.b,cx2+12,hy+3,16,1);if(hint.on)tx('手持ち',hx+hw-4,hy+14,'#ffd880','right',8)}if(!isNew&&r.lv)tx(r.lv,x+cw/2,y+ch-12,'#d8c8a0','center',9);if(!TOUCH)tx(String(i+1),x+10,y+ch-10,'#5a5470','left',9,FP);
   g.globalAlpha=1;btn(x,y,cw,ch,()=>{if(SEL!==i&&TOUCH){SEL=i;return}pickOpt(i)})});
  if(TOUCH&&LVA.pick<0)tx('もう一度押して決める',UW/2,y0+ch+22,'#8a8498','center',10)}
 function pickOpt(i){if(MODE!=='lv')return;const o=LVO[i],r=LVR.find(q=>q.i===i);LOUT={o,info:optInfo(o),r:r||{x:UW/2-60,y:UH*.3,w:120,h:180},t0:T};if(NETC)netTo(MPS.hid,{ty:'pk',i});else takeOpt(o);snd('tn');MODE='play';LVO=null;LVA.pick=-1;if(LVQ>0)openLv()}
@@ -655,7 +660,7 @@ function shadeC(h,k){const n=parseInt(h.slice(1),16);return`rgb(${(n>>16)*k|0},$
 const ONIG=pix(['....aaa....','...abbba...','..abbbbba..','.abbbbbbba.','.abbbbbbba.','abbbbbbbbba','abbcccccbba','abcccccccba','.accccccca.','..aaaaaaa..'],{a:'#c8c0b0',b:'#f4f0e6',c:'#1c2a20'});
 /* ===== 進化の一覧（10件ずつのページ） ===== */
 let EVL=0,EVP=0;const EVN=10;
-function drawEvl(){const p=P,ks=Object.keys(W),pages=Math.ceil(ks.length/EVN);EVP=cl(EVP,0,pages-1);const list=ks.slice(EVP*EVN,EVP*EVN+EVN),rh=Math.min(36,(UH-120)/EVN),w=Math.min(UW-20,520),h=70+EVN*rh+40;const[x,y]=panel(w,h);
+function drawEvl(){const p=P,ks=Object.keys(W),pages=Math.ceil(ks.length/EVN);EVP=cl(EVP,0,pages-1);const list=ks.slice(EVP*EVN,EVP*EVN+EVN),rh=Math.min(36,(UH-120)/EVN),w=Math.min(UW-20,520),h=70+EVN*rh+40;const[x,y]=panel(w,h);btn(0,0,UW,UH,()=>{});
  tx('進化の組み合わせ',UW/2,y+26,'#ffd880','center',16);tx('武器を Lv8 にして、対の持ち物を持っていれば、宝箱から進化する',UW/2,y+46,'#9a98ac','center',10);
  list.forEach((k,i)=>{const D=W[k],wp=p.ws.find(q=>q.k===k),hp=!!p.pas[D.evo.p],yy=y+58+i*rh,ok=wp&&(wp.lv>=8||wp.evo)&&hp,done=wp&&wp.evo;g.fillStyle=ok||done?'rgba(255,210,110,.1)':i%2?'rgba(255,255,255,.03)':'rgba(255,255,255,.0)';g.fillRect(x+8,yy,w-16,rh-3);
   const c1=x+14,c2=x+w*.4,c3=x+w*.66,is=Math.min(28,rh-6),ty=yy+rh/2+3;
@@ -664,7 +669,7 @@ function drawEvl(){const p=P,ks=Object.keys(W),pages=Math.ceil(ks.length/EVN);EV
   tx('→',c3-12,ty,'#8a8498','center',12);g.globalAlpha=done||ok?1:.6;icon(D.evo.ic,c3,yy+(rh-3-is)/2,is,done||ok);tx(D.evo.n,c3+is+8,ty-(done||ok?5:0),done?'#ffd860':ok?'#ffe8a0':'#c8c4d0','left',12);if(done)tx('進化済み',c3+is+8,ty+9,'#ffd860','left',9);else if(ok)tx('宝箱を待つ',c3+is+8,ty+9,'#e8c070','left',9);g.globalAlpha=1});
  const by=y+h-30;const pb=(lab,bx,f,on)=>{box(bx,by,60,22,on?'rgba(60,64,90,.95)':'rgba(30,32,44,.6)');tx(lab,bx+30,by+15,on?'#fff':'#5a5a6a','center',11);if(on)btn(bx,by,60,22,f)};
  pb('◀',x+12,()=>{EVP--;snd('cl')},EVP>0);pb('▶',x+w-72,()=>{EVP++;snd('cl')},EVP<pages-1);tx((EVP+1)+' / '+pages,UW/2-70,by+15,'#a8a0b8','center',10,FP);
- box(UW/2-10,by,90,22,'rgba(50,56,80,.95)');tx('戻る',UW/2+35,by+15,'#fff','center',11);btn(UW/2-10,by,90,22,()=>{EVL=0});btn(0,0,UW,UH,()=>{})}
+ box(UW/2-10,by,90,22,'rgba(50,56,80,.95)');tx('戻る',UW/2+35,by+15,'#fff','center',11);btn(UW/2-10,by,90,22,()=>{EVL=0})}
 
 /* ===== 場所を選ぶ画面：左に場所の札、右に大きな見本（敵が歩き、主の影が立つ） ===== */
 function silo(s,col){if(!s.ok)return null;const k='_s'+col;if(s[k])return s[k];const c=MKC(s.w,s.h),x=c.getContext('2d');x.drawImage(s.f,0,0);x.globalCompositeOperation='source-in';x.fillStyle=col;x.fillRect(0,0,s.w,s.h);return s[k]=c}
@@ -801,7 +806,7 @@ function cStart(){TM=TH[STG];TILE=mkTile(TM);EN=[];BU=[];FX=[];DN=[];PK=[];PT=[]
  PLS=MPS.pl.map((r,i)=>{const q={isPl:1,x:(i-(MPS.pl.length-1)/2)*40,y:0,hp:1,lv:1,xp:0,face:1,dx:1,dy:0,inv:0,ws:[],pas:{},hit:0,walk:0,dead:0,ci:r.ci,id:r.id,nm:r.nm,pi:i,in:[0,0]};P=q;stats();q.hp=q.s.mhp;return q});LPI=Math.max(0,MPS.pl.findIndex(q=>q.id===NET.id));P=PLS[LPI];CHI=PLS[LPI].ci;CLS=performance.now();MODE='play';banner(TM.n,TM.sub);music(AREA().bgm)}
 function cApply(m){CLS=performance.now();TIME=m.t;KILLS=m.k;GOLD=m.g;TX={lv:m.lv,xp:m.xp};SHAKE=Math.max(SHAKE,m.sh);if(m.bn&&(!BANNER||BANNER.s!==m.bn.s))BANNER=m.bn;
  m.pl.forEach((a,i)=>{const q=PLS[i];if(!q)return;const me=i===LPI;const[x,y]=a;if(me){if(hyp(q.x-x,q.y-y)>56||a[7]){q.x=x;q.y=y}else{q.sx=x;q.sy=y}}else{q.tx=x;q.ty=y;if(q.x==null||hyp(q.x-x,q.y-y)>200){q.x=x;q.y=y}}
-  q.hp=a[2];if(!me)q.face=a[3];q.walk=me?q.walk:a[4]?(q.walk||0)+.01:0;q.hit=a[5]?.1:0;q.inv=a[6]?.1:0;q.dead=a[7];q.dT=a[8];q.hurtT=Math.max(q.hurtT||0,a[9]);q.bar=a[10]?0:1;q.ws=a[11].map(w=>({k:w[0],lv:w[1],evo:w[2],dm:w[3],ang:w[4],act:w[5],rr:w[6],wsp:w[7]?w[7].map(o=>({x:o[0],y:o[1]})):null}));q.pas=a[12];q.s=a[13];if(!me){q.dx=a[14];q.dy=a[15]}q.left=a[16];q.xp=m.xp;q.lv=m.lv});
+  q.hp=a[2];if(!me)q.face=a[3];q.walk=me?q.walk:a[4]?(q.walk||0)+.01:0;q.hit=a[5]?.1:0;q.inv=a[6]?.1:0;q.dead=a[7];q.dT=a[8];q.hurtT=Math.max(q.hurtT||0,a[9]);q.bar=a[10]?0:1;q.ws=a[11].map(w=>({k:w[0],lv:w[1],evo:w[2],dm:w[3],ang:w[4],act:w[5],rr:w[6],wsp:w[7]?w[7].map(o=>({x:o[0],y:o[1]})):null}));q.pas=a[12];q.s=a[13];if(!me){q.dx=a[14];q.dy=a[15]}q.left=a[16];q.xp=m.xp;q.lv=m.lv;if(me)for(const w of q.ws)if(w.evo){META.evd=META.evd||{};if(!META.evd[w.k]){META.evd[w.k]=1;LS.set('battlearena_meta',META)}}});
  const seen=new Set();for(const a of m.en){const[id,ki,x,y,tier,hp,fl,frz,cast,lbs]=a;seen.add(id);let e=CEN.get(id);if(!e){if(ki<0)e={lamp:1,id,x,y,r:15,hp:1,mhp:1};else{const k=EKS[ki],d=A.en[k];e={id,k,d,tier,sp:eSpr(k,tier),r:tier===2?26:tier===1?18:cl(Math.round(d.w*.12),7,16),ph:R()*TAU,x,y,hp,mhp:100}}CEN.set(id,e)}
   e.tx=x;e.ty=y;e.hp=hp;e.fl=fl?.1:0;e.frz=frz;e.cast=cast;if(lbs&&e.lbs!==lbs){e.lbs=lbs;e.lbt=1.6}}
  for(const[id,e]of CEN)if(!seen.has(id)&&!e.dead)CEN.delete(id);EN=[...CEN.values()];
@@ -886,4 +891,4 @@ addEventListener('blur',()=>{for(const k in KEY)KEY[k]=0;if(MODE==='play')PAUSE=
 /* ===== 回す ===== */
 fit();TILE=mkTile(TH.forest);let last=performance.now();
 function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);draw();requestAnimationFrame(loop)}requestAnimationFrame(loop);
-window.GM={setP:i=>{P=PLS[i]},get MPS(){return MPS},get NET(){return NET},get PLS(){return PLS},get NETC(){return NETC},mpHost,mpJoin,mpStart,mpCi,W,hurtP:(d)=>hurtP(d),set PAUSE(v){PAUSE=v},set EVL(v){EVL=v},get P(){return P},get EN(){return EN},get MODE(){return MODE},set MODE(v){MODE=v},get TIME(){return TIME},set TIME(v){TIME=v},get LVO(){return LVO},newRun,update,pickOpt,openChest,addXp,set STG(v){STG=v},set CHI(v){CHI=v},get KILLS(){return KILLS},get PK(){return PK},endRun,stats,get CHST(){return CHST},set CHST(v){CHST=v}};
+window.GM={set LVO(v){LVO=v},setP:i=>{P=PLS[i]},get MPS(){return MPS},get NET(){return NET},get PLS(){return PLS},get NETC(){return NETC},mpHost,mpJoin,mpStart,mpCi,W,hurtP:(d)=>hurtP(d),set PAUSE(v){PAUSE=v},set EVL(v){EVL=v},get P(){return P},get EN(){return EN},get MODE(){return MODE},set MODE(v){MODE=v},get TIME(){return TIME},set TIME(v){TIME=v},get LVO(){return LVO},newRun,update,pickOpt,openChest,addXp,set STG(v){STG=v},set CHI(v){CHI=v},get KILLS(){return KILLS},get PK(){return PK},endRun,stats,get CHST(){return CHST},set CHST(v){CHST=v}};
