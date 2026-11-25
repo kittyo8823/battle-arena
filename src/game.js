@@ -463,26 +463,28 @@ const CSZ=32;let MAP=null,TW=[],WV=null,TOAST=[];const NWAVE=15;
 function srng(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 // 地図（ユーザー指定：広く、変わった形。敵は1〜2方向の遠い門から来る）。140×100マス。0床・1壁（森・壁）・2水や虚空（飛ぶ敵だけ越える）・3障害物
 const STL={// 本塔・門・道（太さ）・広場・小塔の位置（マス）・外側の種類
- forest:{bg:1,base:[16,50],gates:[[131,50]],lanes:[[[16,50],[34,30],[56,30],[70,62],[96,72],[110,40],[131,50]]],w:6,clr:[[56,46,8],[100,56,7],[34,70,9]],subs:[[48,30],[92,70],[118,44]]},
- sunk:{bg:2,base:[70,90],gates:[[18,8],[122,8]],lanes:[[[70,90],[52,70],[34,48],[22,26],[18,8]],[[70,90],[88,70],[106,48],[118,26],[122,8]]],w:6,clr:[[70,72,11],[30,40,6],[110,40,6]],subs:[[40,56],[24,26],[100,56],[116,26]]},
- hall:{bg:1,base:[12,50],gates:[[132,26],[132,74]],lanes:[[[12,50],[28,26],[80,22],[132,26]],[[12,50],[28,74],[80,78],[132,74]],[[70,26],[70,74]]],w:6,clr:[[70,50,9],[106,24,6],[106,76,6]],subs:[[46,22],[96,23],[46,77],[96,77]]},
- jungle:{bg:1,base:[16,86],gates:[[128,12],[130,86]],lanes:[[[16,86],[40,72],[58,46],[86,34],[110,22],[128,12]],[[130,86],[104,84],[80,64],[58,46]]],w:6,clr:[[58,46,9],[96,30,6],[30,60,8]],subs:[[42,70],[84,36],[100,80]]},
- temple:{bg:2,base:[14,50],gates:[[134,50]],lanes:[[[14,50],[38,20],[62,80],[88,20],[112,80],[134,50]]],w:5,clr:[[38,20,7],[62,80,7],[88,20,7],[112,80,7]],subs:[[38,22],[62,78],[88,22],[112,78]]},
- heaven:{bg:2,base:[16,50],gates:[[131,28],[131,72]],lanes:[[[16,50],[48,24],[84,50],[120,28],[131,28]],[[16,50],[48,76],[84,50],[120,72],[131,72]]],w:4,clr:[[16,50,12],[48,24,9],[48,76,9],[84,50,11],[120,28,8],[120,72,8]],subs:[[48,24],[48,76],[84,50]]}};
+ forest:{bg:1,base:[16,50],gates:[[131,50]],lanes:[[[16,50],[34,30],[56,30],[70,62],[96,72],[110,40],[131,50]]],w:9,clr:[[56,46,11],[100,56,10],[34,70,12]]},
+ sunk:{bg:2,base:[70,90],gates:[[18,8],[122,8]],lanes:[[[70,90],[52,70],[34,48],[22,26],[18,8]],[[70,90],[88,70],[106,48],[118,26],[122,8]]],w:9,clr:[[70,72,14],[30,40,9],[110,40,9]]},
+ hall:{bg:1,base:[12,50],gates:[[132,26],[132,74]],lanes:[[[12,50],[28,26],[80,22],[132,26]],[[12,50],[28,74],[80,78],[132,74]],[[70,26],[70,74]]],w:9,clr:[[70,50,12],[106,24,9],[106,76,9]]},
+ jungle:{bg:1,base:[16,86],gates:[[128,12],[130,86]],lanes:[[[16,86],[40,72],[58,46],[86,34],[110,22],[128,12]],[[130,86],[104,84],[80,64],[58,46]]],w:9,clr:[[58,46,12],[96,30,9],[30,60,11]]},
+ temple:{bg:2,base:[14,50],gates:[[134,50]],lanes:[[[14,50],[38,20],[62,80],[88,20],[112,80],[134,50]]],w:8,clr:[[38,20,10],[62,80,10],[88,20,10],[112,80,10]]},
+ heaven:{bg:2,base:[16,50],gates:[[131,28],[131,72]],lanes:[[[16,50],[48,24],[84,50],[120,28],[131,28]],[[16,50],[48,76],[84,50],[120,72],[131,72]]],w:7,clr:[[16,50,15],[48,24,12],[48,76,12],[84,50,14],[120,28,11],[120,72,11]]}};
 function mkMap(stg,seed){const r=srng(seed),L=STL[stg],gw=140,gh=100,G=new Uint8Array(gw*gh).fill(L.bg),obs=[];const at=(i,j)=>i<0||j<0||i>=gw||j>=gh?1:G[j*gw+i],set=(i,j,v)=>{if(i>0&&j>0&&i<gw-1&&j<gh-1)G[j*gw+i]=v};
  const disc=(x,y,rr,v)=>{for(let j=Math.floor(y-rr);j<=y+rr;j++)for(let i=Math.floor(x-rr);i<=x+rr;i++)if(hyp(i-x,j-y)<=rr)set(i,j,v)};
  const lane=(pts,w)=>{for(let k=0;k<pts.length-1;k++){const[a,b]=pts[k],[c,d]=pts[k+1],n=Math.ceil(hyp(c-a,d-b)*2);for(let s=0;s<=n;s++){const t=s/n,wob=Math.sin((k*7+t*5)*1.3)*.8;disc(a+(c-a)*t,b+(d-b)*t,w/2+wob,0)}}};
  for(const pts of L.lanes)lane(pts,L.w);for(const[x,y,rr]of L.clr)disc(x,y,rr,0);disc(L.base[0],L.base[1],stg==='heaven'?12:9,0);for(const[x,y]of L.gates)disc(x,y,4.5,0);
  // 道の中心線（障害物を置かない）
  const ctr=[];for(const pts of L.lanes)for(let k=0;k<pts.length-1;k++){const[a,b]=pts[k],[c,d]=pts[k+1],n=Math.ceil(hyp(c-a,d-b));for(let s=0;s<=n;s++)ctr.push([a+(c-a)*s/n,b+(d-b)*s/n])}
- const keep=(i,j,m)=>{if(hyp(i-L.base[0],j-L.base[1])<11)return 1;for(const[x,y]of L.subs)if(hyp(i-x,j-y)<4)return 1;for(const[x,y]of L.gates)if(hyp(i-x,j-y)<6)return 1;for(const[x,y]of ctr)if(hyp(i-x,j-y)<m)return 1;return 0};
+ const keep=(i,j,m)=>{if(hyp(i-L.base[0],j-L.base[1])<11)return 1;for(const[x,y]of L.gates)if(hyp(i-x,j-y)<6)return 1;for(const[x,y]of ctr)if(hyp(i-x,j-y)<m)return 1;return 0};
  const OT={forest:['tree','tree','rock','stump'],sunk:['column','coral','rock','wreck'],hall:['pillar','pillar','statue','crate'],jungle:['palm','bush','ruin','palm'],temple:['mech','gear','mech','pylon'],heaven:['col','cloudp','col','lampst']}[stg];
- for(let t=0,k=0;t<1400&&k<120;t++){const i=2+RI2(r,gw-4),j=2+RI2(r,gh-4);if(at(i,j)!==0)continue;const ty=OT[RI2(r,OT.length)],sz=ty==='tree'||ty==='palm'||ty==='ruin'||ty==='mech'?2+RI2(r,2):ty==='pillar'||ty==='col'||ty==='statue'?2:1+RI2(r,2);let ok=1;for(let y=j-1;y<=j+sz;y++)for(let x=i-1;x<=i+sz;x++)if(at(x,y)!==0||keep(x,y,L.w*.35+1))ok=0;if(!ok)continue;for(let y=j;y<j+sz;y++)for(let x=i;x<i+sz;x++)set(x,y,3);obs.push({ty,i,j,w:sz,h:sz,sd:(r()*1e9)|0});k++}
+ for(let t=0,k=0;t<2400&&k<190;t++){const i=2+RI2(r,gw-4),j=2+RI2(r,gh-4);if(at(i,j)!==0)continue;const ty=OT[RI2(r,OT.length)],sz=ty==='tree'||ty==='palm'||ty==='ruin'||ty==='mech'?2+RI2(r,2):ty==='pillar'||ty==='col'||ty==='statue'?2:1+RI2(r,2);let ok=1;for(let y=j-1;y<=j+sz;y++)for(let x=i-1;x<=i+sz;x++)if(at(x,y)!==0||keep(x,y,L.w*.35+1))ok=0;if(!ok)continue;for(let y=j;y<j+sz;y++)for(let x=i;x<i+sz;x++)set(x,y,3);obs.push({ty,i,j,w:sz,h:sz,sd:(r()*1e9)|0});k++}
  // 通じているか確かめ、だめなら道を太くする
  const bx=L.base[0],by=L.base[1];const bfs=()=>{const D=new Int16Array(gw*gh).fill(-1),q=[bx+by*gw];D[q[0]]=0;for(let h=0;h<q.length;h++){const c=q[h],i=c%gw,j=c/gw|0;for(const[di,dj]of[[1,0],[-1,0],[0,1],[0,-1]]){const ni=i+di,nj=j+dj;if(ni<0||nj<0||ni>=gw||nj>=gh)continue;const n=nj*gw+ni;if(D[n]<0&&G[n]===0){D[n]=D[c]+1;q.push(n)}}}return D};
  let D=bfs();for(const[x,y]of L.gates)if(D[y*gw+x]<0){for(const pts of L.lanes)lane(pts,L.w+2);D=bfs();break}
  const dir=new Int8Array(gw*gh*2);for(let j=0;j<gh;j++)for(let i=0;i<gw;i++){const c=j*gw+i;if(D[c]<0)continue;let bd=D[c],ax=0,ay=0;for(const[di,dj]of[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]){const ni=i+di,nj=j+dj;if(ni<0||nj<0||ni>=gw||nj>=gh)continue;const n=nj*gw+ni;if(D[n]>=0&&D[n]<bd&&(di===0||dj===0||G[j*gw+ni]===0&&G[nj*gw+i]===0)){bd=D[n];ax=di;ay=dj}}dir[c*2]=ax;dir[c*2+1]=ay}
- const M={gw,gh,W:gw*CSZ,H:gh*CSZ,G,D,dir,obs,stg,bg:L.bg,gates:L.gates.map(([i,j])=>({x:(i+.5)*CSZ,y:(j+.5)*CSZ})),base:{x:(bx+.5)*CSZ,y:(by+.5)*CSZ},subs:L.subs.map(([i,j])=>({x:(i+.5)*CSZ,y:(j+.5)*CSZ})),chunks:new Map(),seed};return M}
+ const sc=[];for(let j=1;j<gh-1;j++)for(let i=1;i<gw-1;i++){const c=j*gw+i;if(D[c]>=17&&D[c]<=19&&L.gates.some(([gx,gy])=>hyp(i-gx,j-gy)<hyp(bx-gx,by-gy)-4)&&[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]].every(([a,b])=>G[c+a+b*gw]===0))sc.push([i,j])}
+ let sb=[[bx+8,by-6],[bx+8,by+6]],bd=-1;for(let a=0;a<sc.length;a++)for(let b=a+1;b<sc.length;b++){const d=hyp(sc[a][0]-sc[b][0],sc[a][1]-sc[b][1]);if(d>bd){bd=d;sb=[sc[a],sc[b]]}}
+ const M={gw,gh,W:gw*CSZ,H:gh*CSZ,G,D,dir,obs,stg,bg:L.bg,gates:L.gates.map(([i,j])=>({x:(i+.5)*CSZ,y:(j+.5)*CSZ})),base:{x:(bx+.5)*CSZ,y:(by+.5)*CSZ},subs:sb.map(([i,j])=>({x:(i+.5)*CSZ,y:(j+.5)*CSZ})),chunks:new Map(),seed};return M}
 const RI2=(r,n)=>r()*n|0;
 const cellAt=(x,y)=>{if(!MAP)return 0;const i=Math.floor(x/CSZ),j=Math.floor(y/CSZ);return i<0||j<0||i>=MAP.gw||j>=MAP.gh?1:MAP.G[j*MAP.gw+i]};
 const blocked=(x,y,fly)=>{const c=cellAt(x,y);return c===1||(c===3||c===2)&&!fly};
