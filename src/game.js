@@ -779,16 +779,21 @@ function drawChar(){const c=CHS[SEL],col=c.col,UWs=UW,wide=UW>=640;const t=T-CSL
  const ar=(x,d)=>{const a=.5+.3*Math.sin(T*3);g.fillStyle=hexA('#f0e6c8',a);g.beginPath();g.moveTo(x+d*8,gy-80);g.lineTo(x-d*4,gy-92);g.lineTo(x-d*4,gy-68);g.fill();btn(x-22,gy-112,44,64,()=>charGo(SEL+d,d))};ar(sx-126,-1);ar(sx+126,1);
  // 右の説明
  const px=wide?UW*.56:16,pw=wide?UW*.4:UW-32,py=wide?56:UH*.72-6;const pa=ee;g.globalAlpha=pa;
- if(wide){tx((SEL+1)+' / '+CHS.length,px,py,'#6a7088','left',10,FP);tx(A.ch[c.k].n,px+(1-ee)*12,py+34,'#fff4e0','left',28);tx(c.ep,px,py+56,c.lt,'left',13);
-  wrapT(c.lore,px,py+80,pw,'#b8bed0',11,16);
+ if(wide){// 下（顔の並び）から上へ積んで、重ならないようにする
+  const fwL=Math.min(54,(UW-140)/CHS.length),lim=UH-fwL-22,r0=META.bc&&META.bc[SEL];
+  tx((SEL+1)+' / '+CHS.length,px,py,'#6a7088','left',10,FP);tx(A.ch[c.k].n,px+(1-ee)*12,py+30,'#fff4e0','left',UH<440?22:26);tx(c.ep,px,py+50,c.lt,'left',12);
+  const le=wrapT(c.lore,px,py+70,pw,'#b8bed0',10,14);
+  const ry=lim,cpH=48,wpH=52,cy0=ry-(r0?14:0)-cpH,wy=cy0-6-wpH;
   // 能力
-  const ss={might:1,cd:1,area:1,move:1,dur:1,pspd:1,luck:1,mhp:c.hp,armor:0,amt:0,regen:0};CPV[SEL].f(ss,1);const st=[['最大HP',ss.mhp/170],['ダメージ',ss.might],['待ち時間',ss.cd],['範囲',ss.area],['移動',ss.move],['持続',ss.dur],['弾の速さ',ss.pspd],['幸運',ss.luck]].filter((s,i)=>i<2||Math.abs(s[1]-1)>.001);
-  st.forEach(([n,v],i)=>{const y=py+120+i*17;tx(n,px,y+8,'#9098b0','left',10);const bw=pw-110;g.fillStyle='rgba(255,255,255,.07)';g.fillRect(px+70,y,bw,6);const f=n==='最大HP'?v:v/1.3;g.fillStyle=v>1||n==='待ち時間'&&v<1?c.lt:'#8890a8';g.fillRect(px+70,y,bw*cl(f,0,1)*Math.min(1,t*3),6);tx(n==='最大HP'?String(Math.round(ss.mhp)):Math.round(v*100)+'%',px+pw,y+8,'#e8e0d0','right',10)});
+  const ss={might:1,cd:1,area:1,move:1,dur:1,pspd:1,luck:1,mhp:c.hp,armor:0,amt:0,regen:0};CPV[SEL].f(ss,1);let st=[['最大HP',ss.mhp/170],['ダメージ',ss.might],['待ち時間',ss.cd],['範囲',ss.area],['移動',ss.move],['持続',ss.dur],['弾の速さ',ss.pspd],['幸運',ss.luck]].filter((s,i)=>i<2||Math.abs(s[1]-1)>.001);
+  const sy0=le+12,avail=wy-6-sy0,rh=cl(avail/Math.max(1,st.length),0,16);if(rh<10)st=st.slice(0,Math.max(0,Math.floor(avail/10)));const rh2=st.length?Math.min(16,avail/st.length):0;
+  st.forEach(([n,v],i)=>{const y=sy0+i*rh2;tx(n,px,y+7,'#9098b0','left',9);const bw=pw-110;g.fillStyle='rgba(255,255,255,.07)';g.fillRect(px+70,y,bw,5);const f=n==='最大HP'?v:v/1.3;g.fillStyle=v>1||n==='待ち時間'&&v<1?c.lt:'#8890a8';g.fillRect(px+70,y,bw*cl(f,0,1)*Math.min(1,t*3),5);tx(n==='最大HP'?String(Math.round(ss.mhp)):Math.round(v*100)+'%',px+pw,y+7,'#e8e0d0','right',9)});
   // 初めの武器
-  const wy=py+128+st.length*17;const w=W[c.w];box(px,wy,pw,64,'rgba(255,255,255,.04)');g.fillStyle=hexA(c.lt,.6);g.fillRect(px,wy,2,64);icon(w.ic,px+10,wy+8,30);tx('初めの武器',px+48,wy+14,'#7a8098','left',9);tx(w.n,px+48,wy+30,'#f0e6c8','left',13);tx(w.d,px+48,wy+46,'#a8b0c4','left',10);
-  icon(w.evo.ic,px+pw-28,wy+8,20,1);tx('進化',px+pw-18,wy+40,'#c8a860','center',9);tx(w.evo.n,px+pw-18,wy+53,'#e0c888','center',9);
-  {const cp=CPV[SEL],yy=wy+72;box(px,yy,pw,46,'rgba(255,200,90,.06)');g.fillStyle='rgba(255,200,90,.7)';g.fillRect(px,yy,2,46);icon(cp.ic,px+10,yy+8,28,1);tx('固有の力',px+46,yy+14,'#a89060','left',9);tx(cp.n,px+46,yy+29,'#ffe0a0','left',12);tx(cp.d,px+46+g.measureText(cp.n).width*0+0,yy+42,'#c8c0b0','left',9)}
-  const r=META.bc&&META.bc[SEL];if(r)tx(`最長生存 ${mm(r.t)}　最高 Lv${r.lv}　撃破 ${r.k}`,px,wy+134,'#8890a8','left',10)}
+  const w=W[c.w];box(px,wy,pw,wpH,'rgba(255,255,255,.04)');g.fillStyle=hexA(c.lt,.6);g.fillRect(px,wy,2,wpH);icon(w.ic,px+10,wy+11,28);tx('初めの武器',px+46,wy+13,'#7a8098','left',9);tx(w.n,px+46,wy+28,'#f0e6c8','left',12);tx(w.d,px+46,wy+43,'#a8b0c4','left',9);
+  icon(w.evo.ic,px+pw-28,wy+6,20,1);tx('進化',px+pw-18,wy+36,'#c8a860','center',8);tx(w.evo.n,px+pw-18,wy+47,'#e0c888','center',8);
+  // 固有の力
+  {const cp=CPV[SEL],yy=cy0;box(px,yy,pw,cpH,'rgba(255,200,90,.06)');g.fillStyle='rgba(255,200,90,.7)';g.fillRect(px,yy,2,cpH);icon(cp.ic,px+10,yy+7,26,1);tx('固有の力　'+cp.n,px+44,yy+16,'#ffe0a0','left',11);wrapT(cp.d,px+44,yy+29,pw-52,'#c8c0b0',9,11)}
+  if(r0)tx(`最高 Lv${r0.lv}　撃破 ${r0.k}`,px,ry+8,'#8890a8','left',9)}
  else{tx(A.ch[c.k].n,UW/2,py,'#fff4e0','center',22);tx(c.ep,UW/2,py+20,c.lt,'center',12);const w=W[c.w];icon(w.ic,UW/2-110,py+30,22);tx(w.n+'：'+w.d,UW/2-82,py+46,'#d8d0c0','left',11)}
  g.globalAlpha=1;
  // 下の顔の並び
