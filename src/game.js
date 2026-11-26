@@ -95,7 +95,7 @@ const RKD=RKS.map(r=>r.dmg),RKJ=['ふつう','よい','すぐれた','伝説の'
 // ランクは総合の強さ（ユーザー指定）。どこが強いかは武器ごとに違う：WPF が武器ごとの癖、dmg は測って合わせる（tests/rank.js）
 let WPF={
  pen:{dmg:0.39},sakura:{dmg:1.54},thorn:{dmg:0.43},poison:{dmg:0.27},
- sword:{dmg:0.6},knife:{dmg:1.84},moon:{dmg:0.5},book:{dmg:2.51},dumb:{dmg:0.65},jelly:{dmg:4.13},spear:{dmg:0.36},marble:{dmg:0.92},frost:{dmg:3.03},
+ sword:{dmg:0.96},knife:{dmg:1.84},moon:{dmg:0.5},book:{dmg:2.51},dumb:{dmg:0.65},jelly:{dmg:4.13},spear:{dmg:0.36},marble:{dmg:0.92},frost:{dmg:3.03},
  fire:{dmg:1.29,area:1.35,dur:1.2},chain:{dmg:1.51,pc:2},oni:{dmg:0.9,amt:1},bell:{dmg:1.79,area:1.3,cd:.85},lwisp:{dmg:0.97,amt:1},
  bomb:{dmg:4,area:1.5,cd:.85},lens:{dmg:6,cd:1.25,area:.8,amt:1}};
 const WRK={pen:0,sakura:0,thorn:0,poison:0,sword:1,knife:1,moon:1,book:1,dumb:1,jelly:1,spear:1,marble:1,frost:1,fire:2,chain:2,oni:2,bell:2,lwisp:2,bomb:3,lens:3};
@@ -141,7 +141,7 @@ const xpNeed=l=>l<20?5+(l-1)*10:l<40?195+(l-20)*13:455+(l-40)*16;
 const SPD={hum:50,beast:70,heavy:36,blob:44,fly:64,cast:46,stat:38};
 function addE(k,x,y,tier,o){const d=A.en[k];if(!d)return null;const m=RM?(RDL()-1)*.8:TIME/60,av=(d.hp[0]+d.hp[1])/2;
  let hp=tier===3?1e9:tier===2?av*6.5*(1+m*.4):tier===1?av*2.2*(1+m*.35):Math.max(4,av*.3*(1+m*.32));
- if(tier!==3)hp*=1+.75*(NP-1);const sp=eSpr(k,tier),r=tier===2?26:tier===1?18:cl(Math.round(d.w*.12),7,16);
+ if(tier!==3)hp*=1+.75*(NP-1);if(RM)hp*=tier===2?.4:tier===1?.65:1;const sp=eSpr(k,tier),r=tier===2?26:tier===1?18:cl(Math.round(d.w*.12),7,16);
  const e=Object.assign({k,d,x,y,tier,hp,mhp:hp,spd:(SPD[d.cat]||32)*(tier===3?4.2:tier===2?.95:tier===1?.9:1.1)*(.9+R()*.2),dmg:tier===3?9999:RM?(tier===2?16:tier===1?13:9)+m*1.6:tier===2?20+m*2.2:tier===1?12+m*1.8:6+m*1.3,r,sp,kx:0,ky:0,fl:0,hc:{},ph:R()*TAU,id:++EID},o||{});if(o&&o.hp)e.hp=e.mhp=o.hp*(1+.75*(NP-1));EN.push(e);return e}
 function edgePos(){const q=pk(PLS.filter(q=>!q.dead))||P,a=R()*TAU,rr=hyp(LW,LH)/2+30;return[q.x+Math.cos(a)*rr,q.y+Math.sin(a)*rr]}
 const nearPl=(x,y)=>{let b=null,bd=1e9;for(const q of PLS){if(q.dead)continue;const d=hyp(q.x-x,q.y-y);if(d<bd){bd=d;b=q}}return b||PLS[0]};const minPlD=(x,y)=>{let bd=1e9;for(const q of PLS)bd=Math.min(bd,hyp(q.x-x,q.y-y));return bd};
