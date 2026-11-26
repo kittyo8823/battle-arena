@@ -124,9 +124,9 @@ function stats(){const p=P,c=CHS[p.ci==null?CHI:p.ci],s={might:1,armor:0,mhp:c.h
  if(0)for(const k in META.up){const u=MU[k],n=META.up[k];if(!u)continue;if(k==='armor')s.armor+=u.v*n;else if(k==='regen')s.regen+=u.v*n;else if(k==='cd')s.cd-=u.v*n;else if(k==='mhp')s.mhp*=1+u.v*n;else s[k]+=u.v*n}
  {const ci=p.ci==null?CHI:p.ci,lv=1+2*(RM?RM.n-1:WV&&WV.n||0);CPV[ci].f(s,lv)}
  for(const k in p.pas){const n=p.pas[k];if(k==='might')s.might+=.1*n;else if(k==='armor')s.armor+=n;else if(k==='mhp')s.mhp*=1+.2*n;else if(k==='regen')s.regen+=.2*n;else if(k==='cd')s.cd-=.08*n;else if(k==='area')s.area+=.1*n;else if(k==='dur')s.dur+=.1*n;else if(k==='amt')s.amt+=n;else if(k==='move')s.move+=.1*n;else if(k==='magnet')s.magnet+=.25*n;else if(k==='luck')s.luck+=.1*n;else if(k==='growth')s.growth+=.08*n;else if(k==='pspd')s.pspd+=.1*n;else if(k==='crit')s.crit+=.05*n;else if(k==='vamp')s.vamp+=.03*n;else if(k==='greed')s.greed+=.2*n;else if(k==='rev')s.rev+=n;else if(k==='inv')s.invb+=.1*n;else if(k==='slow')s.es-=.05*n;else if(k==='barr')s.barr=23-3*n}
- if(RM){equipStats(s,p);traitStats(s,p);s.mhp+=(p.mhb||0)*25;s.mhp=Math.max(2,Math.round(s.mhp/25))}s.mhp=Math.round(s.mhp);const om=p.s?p.s.mhp:s.mhp;p.s=s;if(s.mhp>om)p.hp+=s.mhp-om;p.hp=Math.min(p.hp,s.mhp)}
-function ws(w){const d=W[w.k],s=Object.assign({},d.b);for(let i=0;i<w.lv-1;i++)for(const k in d.i[i])s[k]+=d.i[i][k];const ps=P.s;
- const Q=WPF[w.k]||{};return {dmg:s.dmg*ps.might*(Q.dmg||1)*(w.evo?1.6:1)*(RM?.42*fivK(w.k)*trDmg(P):1),cd:Math.max(.15,s.cd*ps.cd*(Q.cd||1)*(w.evo?.7:1)),amt:s.amt+ps.amt+(Q.amt||0)+(w.evo?1:0),area:s.area*ps.area*(Q.area||1)*(w.evo?1.25:1),spd:s.spd*ps.pspd*(Q.spd||1),dur:s.dur*ps.dur*(Q.dur||1),pierce:s.pierce+(Q.pc||0)+(w.evo?2:0)}}
+ if(RM){equipStats(s,p);traitStats(s,p);statCalc(s,p);s.mhp+=(p.mhb||0)*25;s.mhp=Math.max(2,Math.round(s.mhp/25))}s.mhp=Math.round(s.mhp);const om=p.s?p.s.mhp:s.mhp;p.s=s;if(s.mhp>om)p.hp+=s.mhp-om;p.hp=Math.min(p.hp,s.mhp)}
+function ws(w){const d=W[w.k],s=Object.assign({},d.b);for(let i=0;i<(RM?0:w.lv-1);i++)for(const k in d.i[i])s[k]+=d.i[i][k];const ps=P.s;
+ const Q=WPF[w.k]||{};return {dmg:s.dmg*ps.might*(Q.dmg||1)*(w.evo?1.6:1)*(RM?.42*fivK(w.k)*trDmg(P)*(1+wScale(w.k,P.s))*(1+.1*(w.up||0))*.85:1),cd:Math.max(.15,s.cd*ps.cd*(Q.cd||1)*(w.evo?.7:1)),amt:s.amt+ps.amt+(Q.amt||0)+(w.evo?1:0),area:s.area*ps.area*(Q.area||1)*(w.evo?1.25:1),spd:s.spd*ps.pspd*(Q.spd||1),dur:s.dur*ps.dur*(Q.dur||1),pierce:s.pierce+(Q.pc||0)+(w.evo?2:0)}}
 
 /* ===== 始める ===== */
 function newRun(){TM=TH[STG];TILE=mkTile(TM);EN=[];BU=[];FX=[];DN=[];PK=[];INF=null;LOUT=null;EVL=0;DEATH=null;HURT=0;TIME=0;KILLS=0;GOLD=0;SPWN=0;EVT={};DQ=[];BANK=0;PT=[];EB=[];TG=[];SHAKE=0;LVQ=0;LVO=null;CHST=null;PAUSE=0;RESULT=null;
@@ -372,7 +372,7 @@ const FIV={knife:.16,pen:.14,sakura:.22,book:.3,sword:.32,moon:.38,dumb:.5,jelly
 const wBaseCd=k=>W[k].b.cd*((WPF[k]||{}).cd||1),fivK=k=>(FIV[k]||.3)/cl(wBaseCd(k)*.3,.11,.45);
 function fireW(w,s,dt){const n0=FX.length;fire(w,s,dt);const rk=wrk(w.k);for(let i=n0;i<FX.length;i++)if(FX[i].rk==null){FX[i].rk=rk;FX[i].wk=w.k;if(rk>=2)rankBurst(FX[i],rk,w.k)}}
 function autoAim(p){let b=null,bd=520;for(const e of EN){if(e.dead||e.lamp)continue;const d=hyp(e.x-p.x,e.y-p.y);if(d<bd&&losOK(p.x,p.y-10,e.x,e.y-10,1)){bd=d;b=e}}if(b){const dx=b.x-p.x,dy=b.y-12-(p.y-14),l=hyp(dx,dy)||1;p.ax=dx/l;p.ay=dy/l}}
-function roomFire(p,dt){const m=p.ws[0];if(!m)return;const iv=(FIV[m.k]||.3)*(ws(m).cd/wBaseCd(m.k))*(p.s.rl||1);p.fcd=(p.fcd||0)-dt;
+function roomFire(p,dt){const m=p.ws[0];if(!m)return;const iv=(FIV[m.k]||.3)*(ws(m).cd/wBaseCd(m.k))*(p.s.rl||1)/(p.s.aspd||1);p.fcd=(p.fcd||0)-dt;
  for(const w of p.ws)if(w.t<1)w.t=1;for(const w of p.ws)fireW(w,ws(w),dt);
  const aim=()=>{p.dx=p.ax;p.dy=p.ay;if(Math.abs(p.ax)>.12)p.face=p.ax>0?1:-1};
  const q=p.atkq;const dashing=p.dsh>0||T-(p.dashAt||-9)<.18;if(q&&(p.fcd<=0||q.ch||q.sl)&&!p.dead){p.atkq=0;if(q.auto)autoAim(p);aim();
@@ -394,6 +394,17 @@ function drawRoom(X,Y){drawNames(X,Y);// 出てくる場所の予告・開いた
   if(q&&!q.dead&&(JOY2.on&&hyp(JOY2.x-JOY2.ox,JOY2.y-JOY2.oy)>12||!TOUCH&&T-AIMM<4)){const x0=X(q.x),y0=Y(q.y)-14;g.save();g.translate(x0,y0);g.rotate(Math.atan2(q.ay,q.ax));g.fillStyle=JOY2.on?'rgba(255,255,255,.16)':'rgba(255,255,255,.07)';const L2={sword:100,poison:60,jelly:70,dumb:200,spear:180,fire:160,bomb:170}[q.ws[0]&&q.ws[0].k]||240;g.fillRect(14,-9,L2,18);g.fillStyle='rgba(255,255,255,.35)';g.fillRect(14,-9,L2,1);g.fillRect(14,8,L2,1);g.restore()}}
  const q=LP();if(q&&!q.dead&&q.ax!=null){const x=X(q.x+q.ax*42),y=Y(q.y-14+q.ay*42);g.strokeStyle='rgba(255,240,210,.55)';g.lineWidth=1.5;g.beginPath();g.arc(x,y,5,0,TAU);g.stroke();g.fillStyle='rgba(255,240,210,.8)';g.fillRect(x-.5,y-.5,1.5,1.5)}}
 
+
+/* ===== 能力値（ユーザー指定：本家に近づける）：力＝ダメージ、器用さ＝攻撃の速さ、知力＝会心。武器ごとに伸び方の字 ===== */
+const CST=[{s:8,d:5,i:3},{s:4,d:9,i:3},{s:6,d:7,i:3},{s:3,d:4,i:9},{s:9,d:3,i:3},{s:3,d:5,i:8},{s:5,d:4,i:7}];
+const WGR={sword:{s:'A',d:'D'},knife:{d:'A',s:'E'},moon:{s:'B',d:'B'},book:{i:'A'},dumb:{s:'S'},jelly:{i:'B',d:'C'},spear:{i:'B',s:'C'},poison:{i:'B'},fire:{i:'A',s:'D'},chain:{i:'S'},bomb:{s:'B',i:'B'},thorn:{d:'B',s:'C'},pen:{d:'A',i:'C'},marble:{d:'B'},oni:{s:'A',d:'C'},sakura:{d:'A'},bell:{i:'A'},lwisp:{i:'A'},frost:{i:'B',d:'C'},lens:{d:'S',i:'B'}};
+const GRC={S:4,A:3,B:2.2,C:1.5,D:.9,E:.4},STN={s:'力',d:'器用さ',i:'知力'},MELEE={sword:1,jelly:1,poison:1,thorn:1,oni:1};
+const maxUp=k=>MELEE[k]?4:3,wScale=(k,s)=>{const gr=WGR[k]||{};let b=0;for(const a in gr)b+=(s[a==='s'?'STR':a==='d'?'DEX':'INT']||0)*GRC[gr[a]]/100;return b};
+const grTxt=k=>{const gr=WGR[k]||{};return Object.keys(gr).map(a=>STN[a]+' '+gr[a]).join('・')||'なし'};
+// 装備の能力値（説明にも足す）
+const EQST={leather:{d:1},chainm:{s:2},cloak:{d:3},robe:{i:3},plate:{s:3},thorn:{s:2},knight:{s:2,i:2},ring:{s:3},boot:{d:2},astro:{i:2},ruby:{},drip:{d:3},skull:{i:3},fang:{s:1},apple:{},kifuda:{i:1},belt:{d:2},torii:{},dice:{d:1},fan:{i:2},amulet:{},crown:{s:2,d:2,i:2}};
+const stTxt=o=>Object.keys(o||{}).filter(a=>o[a]).map(a=>STN[a]+'+'+o[a]).join('・');
+function statCalc(s,p){const c=CST[p.ci==null?CHI:p.ci]||{s:5,d:5,i:5};let S=c.s,D=c.d,I=c.i;const add=o=>{if(!o)return;S+=o.s||0;D+=o.d||0;I+=o.i||0};if(p.eq){add(EQST[p.eq.a]);for(const k of p.eq.c)add(EQST[k])}add(p.bs);s.STR=S;s.DEX=D;s.INT=I;s.might+=S*.005;s.aspd=1+D*.005;s.crit+=I*.005}
 /* ===== 装備（ユーザー指定：ヴァンサバ風の持ち物・進化はやめて、武器・防具・装飾2つを宝箱と店で集める） ===== */
 const EQA={leather:{n:'革の鎧',ic:'buckler',rk:0,d:'最大ハート+1',f:s=>{s.mhp+=25}},
  chainm:{n:'鎖かたびら',ic:'buckler',rk:1,d:'最大ハート+1・時々防ぐ（14%）',f:s=>{s.mhp+=35;s.armor+=2}},
@@ -419,20 +430,20 @@ const EQC={ring:{n:'力の指輪',ic:'ring',rk:0,d:'ダメージ+12%',f:s=>{s.mi
  crown:{n:'王の冠',ic:'crown',rk:3,d:'ダメージ+25%・攻撃の間隔-13%',f:s=>{s.might+=.25;s.rl*=.87}}};
 const isShopR=n=>rin(n)===3;
 const NPCN={smith:'鍛冶屋',shrine:'祈りの像',pawn:'質屋',fount:'特性の泉',curse:'呪いの祭壇',gamble:'賭け師',altar:'合成の祭壇'};
-const ITN=it=>it.t==='npc'?NPCN[it.k]+(it.k==='altar'&&it.w?'：'+W[it.w.k].n:''):it.t==='w'?W[it.k].n+(it.fu?'＋'+W[it.fu].n:'')+(it.lv>1?' +'+(it.lv-1):''):it.t==='a'?EQA[it.k].n:it.t==='c'?EQC[it.k].n:'ハートの薬';
+const ITN=it=>it.t==='npc'?NPCN[it.k]+(it.k==='altar'&&it.w?'：'+W[it.w.k].n:''):it.t==='w'?W[it.k].n+(it.fu?'＋'+W[it.fu].n:'')+(it.up?' +'+it.up:''):it.t==='a'?EQA[it.k].n:it.t==='c'?EQC[it.k].n:'ハートの薬';
 const ITI=it=>it.t==='npc'?'anvil':it.t==='w'?W[it.k].ic:it.t==='a'?EQA[it.k].ic:it.t==='c'?EQC[it.k].ic:'onigiri';
 const ITR=it=>it.t==='npc'?0:it.t==='w'?wrk(it.k):it.t==='a'?EQA[it.k].rk:it.t==='c'?EQC[it.k].rk:0;
-const ITD=it=>it.t==='npc'?({smith:'武器を鍛える（+1）　'+smithPrice(LP())+' 金貨',shrine:'ハートを1つささげて、良い装備を1つ',pawn:'防具・装飾を半値で買い取る',fount:'特性を1つ授かる（1回）',curse:'呪いを受けて、良い物をもらう',gamble:Math.round(60+RDL()*15)+' 金貨で装備を1つ（3回まで）',altar:'今の武器に合わせる（合成）'}[it.k]||''):it.t==='w'?'武器：'+W[it.k].d:it.t==='a'?'防具：'+EQA[it.k].d:it.t==='c'?'装飾：'+EQC[it.k].d:'ハートを1つ回復';
+const ITD=it=>it.t==='w'?'武器：'+W[it.k].d+'（伸び方 '+grTxt(it.k)+'）':(it.t==='a'||it.t==='c')&&stTxt(EQST[it.k])?(it.t==='a'?'防具：'+EQA[it.k].d:'装飾：'+EQC[it.k].d)+'・'+stTxt(EQST[it.k]):it.t==='npc'?({smith:'武器を鍛える（+1）　'+smithPrice(LP())+' 金貨',shrine:'ハートを1つささげて、良い装備を1つ',pawn:'防具・装飾を半値で買い取る',fount:'特性を1つ授かる（1回）',curse:'呪いを受けて、良い物をもらう',gamble:Math.round(60+RDL()*15)+' 金貨で装備を1つ（3回まで）',altar:'今の武器に合わせる（合成）'}[it.k]||''):it.t==='w'?'武器：'+W[it.k].d:it.t==='a'?'防具：'+EQA[it.k].d:it.t==='c'?'装飾：'+EQC[it.k].d:'ハートを1つ回復';
 function randItem(n,t){const rw=[.5,.36,.12+n*.012,.03+n*.01];let tot=rw.reduce((a,b)=>a+b),q=R()*tot,rk=0;for(;rk<3;rk++){q-=rw[rk];if(q<=0)break}{const fl=RM?flo(RM.n):6,cap=fl<=1?1:fl===2?2:3;if(rk>cap&&R()>.05)rk=cap}
  t=t||(R()<.35?'w':R()<.4?'a':'c');const pool=t==='w'?Object.keys(W).filter(k=>wrk(k)===rk):t==='a'?Object.keys(EQA).filter(k=>EQA[k].rk===rk):Object.keys(EQC).filter(k=>EQC[k].rk===rk);
- const all=t==='w'?Object.keys(W):t==='a'?Object.keys(EQA):Object.keys(EQC);const k=pk(pool.length?pool:all);return t==='w'?{t,k,lv:cl(1+Math.floor(n*.5)+RI(2),1,8)}:{t,k}}
-function itemPrice(it,n){if(it.t==='h')return 60;const b={w:[70,140,260,440],a:[55,110,210,360],c:[50,100,190,330]}[it.t][ITR(it)];return Math.round(b*(1+n*.08)*(it.t==='w'?1+(it.lv-1)*.12:1))}
+ const all=t==='w'?Object.keys(W):t==='a'?Object.keys(EQA):Object.keys(EQC);const k=pk(pool.length?pool:all);return t==='w'?{t,k,lv:1,up:R()<.12+n*.03?1:0}:{t,k}}
+function itemPrice(it,n){if(it.t==='h')return 60;const b={w:[70,140,260,440],a:[55,110,210,360],c:[50,100,190,330]}[it.t][ITR(it)];return Math.round(b*(1+n*.08)*(it.t==='w'?1+(it.up||0)*.25:1))}
 function dropItem(x,y,it,price){PK.push({ty:'item',it,x,y,price:price||0,t0:T});glowAt(x,y-10,RKR[ITR(it)],40,.4)}
 function equipStats(s,p){if(!p.eq)return;if(p.eq.a&&EQA[p.eq.a])EQA[p.eq.a].f(s);for(const c of p.eq.c)if(EQC[c])EQC[c].f(s)}
 function pickItem(p,k){const it=k.it;if(it.t==='npc'){const P0=P;P=p;npcAct(p,k);P=P0;return}if(!p.eq)p.eq={a:null,c:[]};if(k.price){if(p.gold<k.price){toast(p,'金貨が足りない（'+k.price+'）');snd('cl');return}p.gold-=k.price}
  k.got=1;const P0=P;P=p;
  if(it.t==='h'){p.hp=Math.min(p.s.mhp,p.hp+1)}
- else if(it.t==='w'){const o=p.ws[0];if(o)dropItem(p.x,p.y+22,{t:'w',k:o.k,lv:o.lv,fu:o.fu,ful:o.ful});p.ws=[{k:it.k,lv:it.lv||1,t:.2,dm:0,oi:p.pi||0,fu:it.fu,ful:it.ful}];p.fuw=null;p.am=0}
+ else if(it.t==='w'){const o=p.ws[0];if(o)dropItem(p.x,p.y+22,{t:'w',k:o.k,lv:1,up:o.up||0,fu:o.fu,ful:o.ful});p.ws=[{k:it.k,lv:1,up:it.up||0,t:.2,dm:0,oi:p.pi||0,fu:it.fu,ful:it.ful}];p.fuw=null;p.am=0}
  else if(it.t==='a'){if(p.eq.a)dropItem(p.x,p.y+22,{t:'a',k:p.eq.a});p.eq.a=it.k}
  else{if(p.eq.c.length>=2){const o=p.eq.c.shift();dropItem(p.x,p.y+22,{t:'c',k:o})}p.eq.c.push(it.k)}
  stats();P=P0;glowAt(p.x,p.y-16,RKR[ITR(it)],50,.4);snd('tn');toast(p,ITN(it)+(it.t==='h'?'':' を装備した'))}
@@ -517,12 +528,13 @@ let CHQ=[],LVTI=null,EQI=null,LPW=null;
 // 詳しい説明（長押し、ユーザー指定）：武器・防具・装飾・NPC・特性・呪い。今の装備と比べる
 function drawEqi(){const p=LP(),E=EQI;g.fillStyle='rgba(4,5,10,.6)';g.fillRect(0,0,UW,UH);btn(0,0,UW,UH,()=>{EQI=null});
  const w=Math.min(UW-30,340);let lines=[],title='',sub='',ic=null,rk=null,col='#f4ecdc',desc='';
- if(E.tr){const d=TRT[E.tr];title=d.n;sub='特性';ic=d.ic;desc=d.d;col='#ffe0a0'}
+ if(E.me){title=A.ch[CHS[p.ci==null?CHI:p.ci].k].n;sub='能力値';ic=CPV[p.ci==null?CHI:p.ci].ic;col='#ffe0a0';desc='固有の力：'+CPV[p.ci==null?CHI:p.ci].d;lines=[['力',p.s.STR+'（ダメージ+'+(p.s.STR*.5).toFixed(1)+'%）'],['器用さ',p.s.DEX+'（攻撃の速さ+'+(p.s.DEX*.5).toFixed(1)+'%）'],['知力',p.s.INT+'（会心+'+(p.s.INT*.5).toFixed(1)+'%）'],['今の武器の伸び方',p.ws[0]?grTxt(p.ws[0].k)+'（+'+Math.round(wScale(p.ws[0].k,p.s)*100)+'%）':'-']]}
+ else if(E.tr){const d=TRT[E.tr];title=d.n;sub='特性';ic=d.ic;desc=d.d;col='#ffe0a0'}
  else if(E.cu){const d=CUR[E.cu];title=d.n;sub='呪い';desc=d.d;col='#d8a8ff'}
  else{const it=E.it;title=ITN(it);ic=it.t==='npc'?null:ITI(it);rk=it.t==='npc'||it.t==='h'?null:ITR(it);desc=ITD(it);sub=it.t==='w'?'武器':it.t==='a'?'防具':it.t==='c'?'装飾':it.t==='h'?'回復':'人・場所';
-  if(it.t==='w'){const tw={k:it.k,lv:it.lv||1,t:0,dm:0,oi:p.pi||0},s2=ws(tw),iv=(FIV[it.k]||.3)*(s2.cd/wBaseCd(it.k))*(p.s.rl||1),dps=s2.dmg*s2.amt/iv;desc=W[it.k].d;
-   lines=[['1発のダメージ',Math.round(s2.dmg)],['攻撃の間隔',iv.toFixed(2)+'秒'],['数',s2.amt],['範囲',Math.round(s2.area*100)+'%'],['1秒あたり（目安）',Math.round(dps)]];if(s2.pierce<90)lines.push(['貫通',s2.pierce]);lines.push(['強さ','Lv '+(it.lv||1)+' / 8']);if(it.fu)lines.push(['合成',W[it.fu].n+'（0.55倍で一緒に出る）']);
-   if(!E.own&&p.ws[0]){const o=p.ws[0],so=ws(o),io=(FIV[o.k]||.3)*(so.cd/wBaseCd(o.k))*(p.s.rl||1),dpo=so.dmg*so.amt/io;lines.push(['今の武器と比べて',(dps>=dpo?'+':'')+Math.round((dps/dpo-1)*100)+'%（1秒あたり）'])}}
+  if(it.t==='w'){const tw={k:it.k,lv:1,up:it.up||0,t:0,dm:0,oi:p.pi||0},s2=ws(tw),iv=(FIV[it.k]||.3)*(s2.cd/wBaseCd(it.k))*(p.s.rl||1)/(p.s.aspd||1),dps=s2.dmg*s2.amt/iv;desc=W[it.k].d;
+   lines=[['伸び方',grTxt(it.k)],['強化','+'+(it.up||0)+' / +'+maxUp(it.k)],['1発のダメージ',Math.round(s2.dmg)],['攻撃の間隔',iv.toFixed(2)+'秒'],['数',s2.amt],['範囲',Math.round(s2.area*100)+'%'],['1秒あたり（目安）',Math.round(dps)]];if(s2.pierce<90)lines.push(['貫通',s2.pierce]);if(it.fu)lines.push(['合成',W[it.fu].n+'（0.55倍で一緒に出る）']);
+   if(!E.own&&p.ws[0]){const o=p.ws[0],so=ws(o),io=(FIV[o.k]||.3)*(so.cd/wBaseCd(o.k))*(p.s.rl||1)/(p.s.aspd||1),dpo=so.dmg*so.amt/io;lines.push(['今の武器と比べて',(dps>=dpo?'+':'')+Math.round((dps/dpo-1)*100)+'%（1秒あたり）'])}}
   else if(it.t==='a'||it.t==='c'){if(!E.own){const cur=it.t==='a'?(p.eq.a?EQA[p.eq.a]:null):(p.eq.c.length>=2?EQC[p.eq.c[0]]:null);lines.push(['入れ替わる物',cur?cur.n+'（'+cur.d+'）':'なし（空きに入る）'])}}
   if(E.price)lines.push(['値段',E.price+' 金貨'+(p.gold<E.price?'（足りない）':'')])}
  const h=96+lines.length*18+(desc?14:0);const x=(UW-w)/2|0,y=(UH-h)/2|0;g.fillStyle='rgba(12,12,20,.97)';g.fillRect(x,y,w,h);g.fillStyle=rk!=null?RKC[rk]:col;g.fillRect(x,y,w,2);btn(x,y,w,h,()=>{EQI=null});
@@ -533,7 +545,7 @@ function drawEqi(){const p=LP(),E=EQI;g.fillStyle='rgba(4,5,10,.6)';g.fillRect(0
  tx(TOUCH?'押すと閉じる':'押す／Esc で閉じる',UW/2,y+h-8,'#6a6478','center',9)}
 function openChoice(ch,opts,a,b){if(MODE!=='play'){CHQ.push({ch,opts,a,b});return}LVTI={a,b};if(ch===LP()){MODE='lv';LVO=opts;SEL=0;LVA={t0:T,pick:-1,pt:0};snd('tn')}else{MODE='lvw';LVW={pi:ch.pi,opts,t0:T};netTo(ch.id,{ty:'lv',opts,ti:[a,b]},1)}}
 function nextChoice(){if(MODE!=='play'||!CHQ.length)return;const c=CHQ.shift();if(c.ch.dead&&!c.any){nextChoice();return}openChoice(c.ch,c.opts,c.a,c.b)}
-function traitOpts(p,n){const ks=Object.keys(TRT).filter(k=>!has(p,k));const o=[];while(o.length<n&&ks.length){const k=ks.splice(RI(ks.length),1)[0];o.push({t:'t',k,n:TRT[k].n,ic:TRT[k].ic,d:TRT[k].d,lv:'特性',tag:'特性'})}return o}
+function traitOpts(p,n){const ks=Object.keys(TRT).filter(k=>!has(p,k));const o=[];if(R()<.6){const a=pk(['s','d','i']);o.push({t:'bs',k:a,n:STN[a]+' +4',ic:a==='s'?'ring':a==='d'?'boot':'tome',d:STN[a]+'が4上がる（'+(a==='s'?'ダメージ':a==='d'?'攻撃の速さ':'会心')+'、武器の伸び方にも効く）',lv:'能力',tag:'能力'})}while(o.length<n&&ks.length){const k=ks.splice(RI(ks.length),1)[0];o.push({t:'t',k,n:TRT[k].n,ic:TRT[k].ic,d:TRT[k].d,lv:'特性',tag:'特性'})}return o}
 function offerTraits(p){openChoice(p,traitOpts(p,3),'TRAIT',(MPON?p.nm+'：':'')+'特性を1つ選ぶ')}
 // 売る（質屋）：防具・装飾を半値で
 function sellOpts(p){const o=[];const pr=it=>Math.round(itemPrice(it,RDL())*.5);if(p.eq.a){const it={t:'a',k:p.eq.a};o.push({t:'sell',s:'a',g:pr(it),n:EQA[p.eq.a].n,ic:EQA[p.eq.a].ic,d:pr(it)+' 金貨で売る',lv:'防具',tag:'売る'})}
@@ -542,7 +554,7 @@ function sellOpts(p){const o=[];const pr=it=>Math.round(itemPrice(it,RDL())*.5);
 function curseOpts(p){const cs=Object.keys(CUR).filter(k=>!(p.cu||[]).includes(k)),o=[];const rw=[{r:'item',n:'ランクの高い装備',ic:'crown'},{r:'gold',n:'金貨 '+Math.round(150+RDL()*40),ic:'ruby'},{r:'heart',n:'最大ハート+1',ic:'heart'},{r:'trait',n:'特性を1つ',ic:'clover'}];
  for(let i=0;i<3&&cs.length;i++){const k=cs.splice(RI(cs.length),1)[0],w=rw[RI(rw.length)];o.push({t:'cu',k,r:w.r,n:w.n,ic:w.ic,d:'呪い：'+CUR[k].n+'（'+CUR[k].d+'）',lv:'呪い',tag:'呪いと引き換え'})}o.push({t:'x',n:'やめる',ic:'scroll',d:'呪いは受けない',lv:'',tag:''});return o}
 // 選んだ物を反映（takeOpt から）
-function takeRoomOpt(o){const p=P;if(o.t==='t'){p.tr=p.tr||[];if(!has(p,o.k))p.tr.push(o.k);stats();toast(p,'特性：'+TRT[o.k].n);glowAt(p.x,p.y-20,'255,220,140',60,.5);return 1}
+function takeRoomOpt(o){const p=P;if(o.t==='bs'){p.bs=p.bs||{};p.bs[o.k]=(p.bs[o.k]||0)+4;stats();toast(p,STN[o.k]+' +4');glowAt(p.x,p.y-20,'255,220,140',50,.4);return 1}if(o.t==='t'){p.tr=p.tr||[];if(!has(p,o.k))p.tr.push(o.k);stats();toast(p,'特性：'+TRT[o.k].n);glowAt(p.x,p.y-20,'255,220,140',60,.5);return 1}
  if(o.t==='x')return 1;
  if(o.t==='sell'){if(o.s==='a'&&p.eq.a){p.eq.a=null}else if(o.s[0]==='c'){const i=+o.s[1];if(p.eq.c[i])p.eq.c.splice(i,1);else return 1}else return 1;p.gold+=o.g;stats();toast(p,'金貨 +'+o.g);snd('cl');return 1}
  if(o.t==='cu'){p.cu=p.cu||[];p.cu.push(o.k);if(o.r==='item')dropItem(p.x,p.y+30,randItem(RDL()+6));else if(o.r==='gold')p.gold+=Math.round(150+RDL()*40);else if(o.r==='heart'){p.mhb=(p.mhb||0)+1}stats();if(o.r==='heart')p.hp=Math.min(p.s.mhp,p.hp+1);glowAt(p.x,p.y-20,'150,60,200',70,.6);shake(4);snd('emagic',100);toast(p,'呪い：'+CUR[o.k].n);if(o.r==='trait')CHQ.push({ch:p,opts:traitOpts(p,3),a:'TRAIT',b:'特性を1つ選ぶ'});return 1}
@@ -576,14 +588,14 @@ function drawRoomFX(){if(cursed('dark')){const q=LP();if(q){const sx=(q.x-CAMX)*
   tx('主',sx-200,y+6,'#ffb0a0','center',12);tx(BOSSI.n,sx+10,y+8,'#fff2e8','center',20);g.globalAlpha=1}}}
 // 鍛冶屋・祈りの像（NPC）
 const isEvR=n=>RM&&(rin(n)===4||rin(n)===2&&flo(n)>1)&&((RM.seed+n*31)%100+100)%100<45&&!isBossR(n);
-function smithPrice(p){const w=p&&p.ws[0];return w?(has(p,'smith')?.5:1)*Math.round((50+w.lv*45)*(1+RDL()*.07)*(1+wrk(w.k)*.25)):0}
+function smithPrice(p){const w=p&&p.ws[0];return w?(has(p,'smith')?.5:1)*Math.round((70+(w.up||0)*60)*(1+RDL()*.07)*(1+wrk(w.k)*.25)):0}
 function npcAct(p,k){const t=k.it.k;
  if(t==='pawn'){const o=sellOpts(p);if(o.length<2){toast(p,'売れる物がない（防具・装飾だけ）');return}openChoice(p,o,'SELL','質屋：売る物を選ぶ（半値）');return}
  if(t==='fount'){if(k.used){toast(p,'泉は涸れている');return}k.used=1;offerTraits(p);return}
  if(t==='curse'){if(k.used){toast(p,'祭壇は黙っている');return}k.used=1;openChoice(p,curseOpts(p),'CURSE','呪いの祭壇：呪いと引き換えに');return}
  if(t==='gamble'){const pr=Math.round(60+RDL()*15);if((k.n||0)>=3){toast(p,'もう賭けられない');return}if(p.gold<pr){toast(p,'金貨が足りない（'+pr+'）');snd('cl');return}p.gold-=pr;k.n=(k.n||0)+1;const r=R();dropItem(k.x+(k.n-2)*40,k.y+44,randItem(RDL()+(r<.2?6:r<.5?2:-3)));sparks(k.x,k.y-20,14,'255,220,120',140);snd('cl');return}
  if(t==='altar'){if(k.used){toast(p,'祭壇は空だ');return}if(!p.ws[0])return;const w2=k.it.w,pr=Math.round(80+RDL()*25);k.used=1;openChoice(p,[{t:'fu',k2:w2.k,l2:w2.lv,price:pr,n:W[p.ws[0].k].n+'＋'+W[w2.k].n,ic:W[w2.k].ic,d:'金貨 '+pr+'：通常攻撃のたびに '+W[w2.k].n+' も出る',lv:'合成',tag:'合成'},{t:'x',n:'やめる',ic:'scroll',d:'合成しない',lv:'',tag:''}],'FUSION','合成の祭壇');return}
- if(t==='smith'){const w=p.ws[0];if(!w)return;if(w.lv>=8){toast(p,'これ以上は鍛えられない');return}const pr=smithPrice(p);if(p.gold<pr){toast(p,'金貨が足りない（'+pr+'）');snd('cl');return}p.gold-=pr;w.lv++;toast(p,W[w.k].n+' を +'+(w.lv-1)+' に鍛えた');for(let i=0;i<20;i++){const a=-Math.PI/2+(R()-.5)*2;part(k.x,k.y-20,Math.cos(a)*120,Math.sin(a)*120,.5,R()<.5?'255,200,120':'255,240,220',2,0,300)}shake(3);snd('eslam',100)}
+ if(t==='smith'){const w=p.ws[0];if(!w)return;if((w.up||0)>=maxUp(w.k)){toast(p,'これ以上は鍛えられない（+'+maxUp(w.k)+'まで）');return}const pr=smithPrice(p);if(p.gold<pr){toast(p,'金貨が足りない（'+pr+'）');snd('cl');return}p.gold-=pr;w.up=(w.up||0)+1;toast(p,W[w.k].n+' を +'+w.up+' に鍛えた');for(let i=0;i<20;i++){const a=-Math.PI/2+(R()-.5)*2;part(k.x,k.y-20,Math.cos(a)*120,Math.sin(a)*120,.5,R()<.5?'255,200,120':'255,240,220',2,0,300)}shake(3);snd('eslam',100)}
  else if(t==='shrine'){if(k.used){toast(p,'像は静かになった');return}if(p.hp<2){toast(p,'ハートが足りない');snd('cl');return}k.used=1;p.hp-=1;p.hurtT=.4;const it=randItem(RDL()+4);dropItem(k.x,k.y+34,it);glowAt(k.x,k.y-30,'200,80,90',80,.6);shake(4);snd('emagic',100);toast(p,'血をささげた')}}
 // NPC・イベントの物（ユーザー指定：大きく、細かく）。足元 (x,y) を中心に描く
 function npcShadow(x,y,w){g.fillStyle='rgba(0,0,0,.35)';g.beginPath();g.ellipse(x,y+2,w,w*.28,0,0,TAU);g.fill()}
@@ -1216,7 +1228,7 @@ function drawHUD(){const p=P;
  // 武器・持ち物
  const SZ=TOUCH?30:28,GP=SZ+3;
  const slot=(x,y,ic,glow,lv,mx,col,f,sel,rk)=>{box(x,y,SZ,SZ,sel?'rgba(70,56,30,.9)':'rgba(10,12,20,.72)');if(rk!=null){if(rk===3){g.globalCompositeOperation='lighter';g.globalAlpha=.25+.12*Math.sin(T*3);g.drawImage(glowC(RKR[3]),x-8,y-8,SZ+16,SZ+16);g.globalAlpha=1;g.globalCompositeOperation='source-over'}g.strokeStyle=RKC[rk];g.globalAlpha=rk>=2?.95:.55;g.lineWidth=rk>=2?1.5:1;g.strokeRect(x+.5,y+.5,SZ-1,SZ-1);g.globalAlpha=1;}g.fillStyle=`rgba(${col},.45)`;g.fillRect(x,y,SZ,1);icon(ic,x+3,y+2,SZ-6,glow);const pw=(SZ-4)/mx;for(let j=0;j<mx;j++){g.fillStyle=j<lv?`rgba(${col},1)`:'rgba(255,255,255,.12)';g.fillRect(x+2+j*pw|0,y+SZ-3,Math.max(1,pw-1|0),2)}if(rk!=null){g.fillStyle='rgba(0,0,0,.7)';g.fillRect(x,y,9,9);tx(RKN[rk],x+4.5,y+8,RKC[rk],'center',7,FP)}btn(x,y,SZ,SZ,f,RM?f:null)};
- {const cp=CPV[p.ci==null?CHI:p.ci],x=4,y=13;box(x,y,SZ,SZ*2+3,'rgba(40,30,14,.8)');g.fillStyle='rgba(255,200,90,.7)';g.fillRect(x,y,SZ,1);icon(cp.ic,x+3,y+SZ/2+2,SZ-6,1);btn(x,y,SZ,SZ*2+3,()=>openInf('c',0))}
+ {const cp=CPV[p.ci==null?CHI:p.ci],x=4,y=13;box(x,y,SZ,SZ*2+3,'rgba(40,30,14,.8)');g.fillStyle='rgba(255,200,90,.7)';g.fillRect(x,y,SZ,1);icon(cp.ic,x+3,y+SZ/2+2,SZ-6,1);btn(x,y,SZ,SZ*2+3,()=>{if(RM)EQI={me:1};else openInf('c',0)})}
  p.ws.forEach((w,i)=>slot(4+(i+1)*GP,13,w.evo?W[w.k].evo.ic:W[w.k].ic,w.evo,w.evo?8:w.lv,8,w.evo?'255,210,110':'255,200,80',RM?()=>{EQI={it:{t:'w',k:w.k,lv:w.lv,fu:w.fu,ful:w.ful},own:1}}:()=>openInf('w',w.k),INF&&INF.k===w.k,wrk(w.k)));
  if(RM&&p.eq){const sl=[p.eq.a?{ic:EQA[p.eq.a].ic,rk:EQA[p.eq.a].rk,it:{t:'a',k:p.eq.a}}:null,...[0,1].map(i=>p.eq.c[i]?{ic:EQC[p.eq.c[i]].ic,rk:EQC[p.eq.c[i]].rk,it:{t:'c',k:p.eq.c[i]}}:null)];sl.forEach((q,i)=>{const x=4+(i+2)*GP,y=13;if(q)slot(x,y,q.ic,0,0,1,'130,190,255',()=>{EQI={it:q.it,own:1}},0,q.rk);else{box(x,y,SZ,SZ,'rgba(10,12,20,.45)');tx(i?'装':'防',x+SZ/2,y+SZ/2+4,'rgba(255,255,255,.2)','center',10)}})}
  if(RM){let iy=13+SZ*2+9;const row=(lab,ic,c,bg,f)=>{g.font='10px '+FT;const w=g.measureText(lab).width+28;g.fillStyle=bg;g.fillRect(4,iy,w,17);g.fillStyle=c;g.fillRect(4,iy,2,17);if(ic)icon(ic,8,iy+1,15);else tx('呪',15,iy+13,'#d8a8ff','center',10);tx(lab,26,iy+13,'#efe6d8','left',10);btn(4,iy,w,17,f,f);iy+=19};for(const k of p.tr||[]){const d=TRT[k];if(d)row(d.n,d.ic,'#ffd070','rgba(34,26,10,.78)',()=>{EQI={tr:k}})}for(const k of p.cu||[]){const d=CUR[k];if(d)row(d.n,null,'#c890ff','rgba(32,12,44,.82)',()=>{EQI={cu:k}})}}
