@@ -453,7 +453,7 @@ function roomChest(p,k){k.got=1;const n=RDL(),it=randItem(n+(k.big?3:0)+(has(p,'
 let INTQ=0;
 // 仲間側：部屋の暗転を進める
 function updRoomC(dt){ambient(dt);FADE=Math.max(0,FADE-dt*2.5);for(const o of SPW){o.t-=dt;if(R()<.5)part(o.x+(R()-.5)*30,o.y+(R()-.5)*16,0,-30,.5,'200,40,60',2,0)}}
-function nearItem(p){let b=null,bd=60;for(const k of PK){if(k.got||k.ty!=='item'||T-k.t0<.4||!k.it)continue;const d=hyp(k.x-p.x,k.y-p.y)+(k.it.t==='npc'?-40:12);if(d<bd){bd=d;b=k}}return b}
+function nearItem(p){let b=null,bd=60;for(const k of PK){if(k.got||k.ty!=='item'||T-k.t0<.4||!k.it)continue;const d=hyp(k.x-p.x,k.y-p.y)+(k.it.t==='npc'?(k.used?60:-40):12);if(d<bd){bd=d;b=k}}return b}
 function heartAt(x,y,s,f){// 点で描くハート（f: 1=満 .5=半 0=空）
  const c=f>0?'#e83a52':'rgba(40,20,30,.8)',m=[[1,0],[2,0],[4,0],[5,0],[0,1],[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[6,2],[1,3],[2,3],[3,3],[4,3],[5,3],[2,4],[3,4],[4,4],[3,5]];g.fillStyle='rgba(0,0,0,.5)';for(const[a,b]of m)g.fillRect(x+a*s+1,y+b*s+1,s,s);g.fillStyle=c;for(const[a,b]of m)g.fillRect(x+a*s,y+b*s,s,s);if(f>0){g.fillStyle='rgba(255,220,230,.8)';g.fillRect(x+s,y+s,s,s)}}
 function drawItems(X,Y){drawStall(X,Y);for(const k of PK){if(k.got||k.ty!=='heart')continue;const x=X(k.x),y=Y(k.y)+Math.sin(T*4+k.x)*2;g.globalCompositeOperation='lighter';g.globalAlpha=.5;g.drawImage(glowC('255,80,100'),x-14,y-24,28,28);g.globalAlpha=1;g.globalCompositeOperation='source-over';heartAt(x-7,y-16,2,1)}
@@ -461,7 +461,7 @@ const q=LP(),nb=q&&!q.dead?nearItem(q):null;
  for(const k of PK){if(k.got||k.ty!=='item'||!k.it)continue;const x=X(k.x),y=Y(k.y);if(x<-40||y<-40||x>LW+40||y>LH+40)continue;if(k.it.t==='npc'){drawNpc(x,y,k);continue}const rk=ITR(k.it),c=RKR[rk],b=Math.sin(T*3+k.x)*2;
   g.fillStyle='rgba(0,0,0,.35)';g.beginPath();g.ellipse(x,y+2,14,5,0,0,TAU);g.fill();
   g.globalCompositeOperation='lighter';g.globalAlpha=.45+.2*Math.sin(T*4+k.x)+(rk>=2?.2:0);g.drawImage(glowC(c),x-22,y-38+b,44,44);g.globalAlpha=1;g.globalCompositeOperation='source-over';
-  icon(ITI(k.it),x-11,y-27+b,22,rk>=3);if(k.price){g.font='8px '+FP;g.textAlign='center';g.fillStyle=q&&q.gold>=k.price?'#6a4a10':'#a04040';g.fillText(k.price,x,y+30)}}
+  icon(ITI(k.it),x-11,y-27+b,22,rk>=3);if(k.price){const ok=q&&q.gold>=k.price,ps=String(k.price);g.font='11px '+FP;const tw=g.measureText(ps).width+22;g.fillStyle='rgba(12,10,8,.9)';g.fillRect(x-tw/2,y+14,tw,17);g.fillStyle=ok?'#d8b050':'#a04040';g.fillRect(x-tw/2,y+14,tw,2);g.drawImage(COIN,x-tw/2+4,y+18,10,10);g.textAlign='left';g.fillStyle=ok?'#ffe8a0':'#ff8a80';g.fillText(ps,x-tw/2+17,y+28)}}
  if(nb){const it=nb.it,rk=ITR(it),t1=ITN(it),t2=ITD(it),t3=it.t==='npc'?(TOUCH?'右下の「話す」':'E で話す'):'長押しで詳しく　'+(TOUCH?(nb.price?'右下の「買う」':'右下の「拾う」'):(nb.price?'E で買う':'E で拾う'));g.font='12px '+FT;const w1=g.measureText(t1).width;g.font='10px '+FT;const w=Math.max(w1+g.measureText(t3).width+24,g.measureText(t2).width)+40,h=40,x=cl(X(nb.x),w/2+4,LW-w/2-4),y=Y(nb.y)-(nb.it.t==='npc'?120:58);
   g.fillStyle='rgba(8,10,18,.9)';g.fillRect(x-w/2,y-h,w,h);g.fillStyle=RKC[rk];g.fillRect(x-w/2,y-h,4,h);tx(RKN[rk],x-w/2+16,y-h+17,RKC[rk],'center',12,FP);tx(t1,x-w/2+30,y-h+17,'#f4ecdc','left',12);tx(t3,x+w/2-8,y-h+17,'#ffe0a0','right',10);tx(t2,x-w/2+30,y-h+33,'#b8c0d4','left',10)}}
 
@@ -593,10 +593,10 @@ function npcAct(p,k){const t=k.it.k;
  if(t==='pawn'){const o=sellOpts(p);if(o.length<2){toast(p,'売れる物がない（防具・装飾だけ）');return}openChoice(p,o,'SELL','質屋：売る物を選ぶ（半値）');return}
  if(t==='fount'){if(k.used){toast(p,'泉は涸れている');return}k.used=1;offerTraits(p);return}
  if(t==='curse'){if(k.used){toast(p,'祭壇は黙っている');return}k.used=1;openChoice(p,curseOpts(p),'CURSE','呪いの祭壇：呪いと引き換えに');return}
- if(t==='gamble'){const pr=Math.round(60+RDL()*15);if((k.n||0)>=3){toast(p,'もう賭けられない');return}if(p.gold<pr){toast(p,'金貨が足りない（'+pr+'）');snd('cl');return}p.gold-=pr;k.n=(k.n||0)+1;const r=R();dropItem(k.x+(k.n-2)*40,k.y+44,randItem(RDL()+(r<.2?6:r<.5?2:-3)));sparks(k.x,k.y-20,14,'255,220,120',140);snd('cl');return}
+ if(t==='gamble'){const pr=Math.round(60+RDL()*15);if((k.n||0)>=3){toast(p,'もう賭けられない');return}if(p.gold<pr){toast(p,'金貨が足りない（'+pr+'）');snd('cl');return}p.gold-=pr;k.n=(k.n||0)+1;const r=R();dropItem(k.x+(k.n-2)*56,k.y+80,randItem(RDL()+(r<.2?6:r<.5?2:-3)));sparks(k.x,k.y-20,14,'255,220,120',140);snd('cl');return}
  if(t==='altar'){if(k.used){toast(p,'祭壇は空だ');return}if(!p.ws[0])return;const w2=k.it.w,pr=Math.round(80+RDL()*25);k.used=1;openChoice(p,[{t:'fu',k2:w2.k,l2:w2.lv,price:pr,n:W[p.ws[0].k].n+'＋'+W[w2.k].n,ic:W[w2.k].ic,d:'金貨 '+pr+'：通常攻撃のたびに '+W[w2.k].n+' も出る',lv:'合成',tag:'合成'},{t:'x',n:'やめる',ic:'scroll',d:'合成しない',lv:'',tag:''}],'FUSION','合成の祭壇');return}
  if(t==='smith'){const w=p.ws[0];if(!w)return;if((w.up||0)>=maxUp(w.k)){toast(p,'これ以上は鍛えられない（+'+maxUp(w.k)+'まで）');return}const pr=smithPrice(p);if(p.gold<pr){toast(p,'金貨が足りない（'+pr+'）');snd('cl');return}p.gold-=pr;w.up=(w.up||0)+1;toast(p,W[w.k].n+' を +'+w.up+' に鍛えた');for(let i=0;i<20;i++){const a=-Math.PI/2+(R()-.5)*2;part(k.x,k.y-20,Math.cos(a)*120,Math.sin(a)*120,.5,R()<.5?'255,200,120':'255,240,220',2,0,300)}shake(3);snd('eslam',100)}
- else if(t==='shrine'){if(k.used){toast(p,'像は静かになった');return}if(p.hp<2){toast(p,'ハートが足りない');snd('cl');return}k.used=1;p.hp-=1;p.hurtT=.4;const it=randItem(RDL()+4);dropItem(k.x,k.y+34,it);glowAt(k.x,k.y-30,'200,80,90',80,.6);shake(4);snd('emagic',100);toast(p,'血をささげた')}}
+ else if(t==='shrine'){if(k.used){toast(p,'像は静かになった');return}if(p.hp<2){toast(p,'ハートが足りない');snd('cl');return}k.used=1;p.hp-=1;p.hurtT=.4;const it=randItem(RDL()+4);dropItem(k.x,k.y+80,it);glowAt(k.x,k.y-30,'200,80,90',80,.6);shake(4);snd('emagic',100);toast(p,'血をささげた')}}
 // NPC・イベントの物（ユーザー指定：大きく、細かく）。足元 (x,y) を中心に描く
 function npcShadow(x,y,w){g.fillStyle='rgba(0,0,0,.35)';g.beginPath();g.ellipse(x,y+2,w,w*.28,0,0,TAU);g.fill()}
 function npcGlow(x,y,c,s,a){g.globalCompositeOperation='lighter';g.globalAlpha=a;g.drawImage(glowC(c),x-s,y-s,s*2,s*2);g.globalAlpha=1;g.globalCompositeOperation='source-over'}
@@ -663,7 +663,7 @@ function drawStall(X,Y){if(!RM||!isShopR(RM.n))return;const its=PK.filter(k=>k.t
  g.fillStyle='#7a2a2a';g.fillRect(l+40,cy-4,w-80,4);g.fillStyle='#c8a040';for(let i=l+44;i<l+w-40;i+=16)g.fillRect(i,cy,6,1);// 布
  for(let i=0;i<20;i++){const sx=l-6+i*(w+12)/20,c=i%2?'#e8dcc0':'#a83a3a';g.fillStyle=c;g.fillRect(sx,cy-134,(w+12)/20+1,18);g.beginPath();g.arc(sx+(w+12)/40,cy-116,(w+12)/40,0,Math.PI);g.fill()}// 屋根
  g.fillStyle='rgba(0,0,0,.22)';g.fillRect(l-6,cy-118,w+12,3);
- for(const k of its){const x=X(k.x);g.fillStyle='#e8dcc0';g.fillRect(x-12,cy+12,24,10);g.fillStyle='rgba(0,0,0,.25)';g.fillRect(x-12,cy+21,24,1)}}
+ }
 /* ===== 粒（演出）・画面の揺れ ===== */
 let PT=[],SHAKE=0,EB=[],TG=[];
 function part(x,y,vx,vy,t,c,s,ty,gv){if(PT.length<900)PT.push({x,y,vx,vy,t,t0:t,c,s:s||2,ty:ty||0,g:gv||0})}
