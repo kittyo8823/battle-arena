@@ -547,7 +547,7 @@ function ambient(dt){const q=LP();if(!q)return;const x0=CAMX,y0=CAMY;const k=STG
 function drawRoomFX(){if(cursed('dark')){const q=LP();if(q){const sx=(q.x-CAMX)*UW/LW,sy=(q.y-14-CAMY)*UH/LH,gr=g.createRadialGradient(sx,sy,UH*.12,sx,sy,UH*.55);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(1,'rgba(0,0,0,.82)');g.fillStyle=gr;g.fillRect(0,0,UW,UH)}}
  if(FLT){if(FLT.t0==null)FLT.t0=T-FLT.t;const t=FLT.t=T-FLT.t0,a=t<.3?t/.3:t>2.4?Math.max(0,(2.9-t)/.5):1;if(t>2.9)FLT=null;else{g.globalAlpha=a;const cy=UH*.36,w=Math.min(UW*.8,520)*Math.min(1,t*3);g.fillStyle='rgba(4,5,10,.7)';g.fillRect(UW/2-w/2,cy-34,w,66);g.fillStyle='rgba(255,220,150,.7)';g.fillRect(UW/2-w/2,cy-34,w,1);g.fillRect(UW/2-w/2,cy+31,w,1);
   tx(FLT.a,UW/2,cy-8,'#d8c8a0','center',12);tx(FLT.b,UW/2,cy+20,'#fff2dc','center',22);g.globalAlpha=1}}
- if(BOSSI){if(BOSSI.t0==null)BOSSI.t0=T-BOSSI.t;const t=BOSSI.t=T-BOSSI.t0;if(t>2.6)BOSSI=null;else{const a=t<.25?t/.25:t>2.1?(2.6-t)/.5:1;g.fillStyle=`rgba(0,0,0,${.45*a})`;g.fillRect(0,0,UW,UH*.12*a);g.fillRect(0,UH-UH*.12*a,UW,UH*.12*a);
+ BOSSI=null;if(BOSSI){if(BOSSI.t0==null)BOSSI.t0=T-BOSSI.t;const t=BOSSI.t=T-BOSSI.t0;if(t>2.6)BOSSI=null;else{const a=t<.25?t/.25:t>2.1?(2.6-t)/.5:1;g.fillStyle=`rgba(0,0,0,${.45*a})`;g.fillRect(0,0,UW,UH*.12*a);g.fillRect(0,UH-UH*.12*a,UW,UH*.12*a);
   const sx=-260+Math.min(1,t*2.5)*(UW/2+260)-(t>2.1?(t-2.1)*900:0),y=UH*.68;g.globalAlpha=a;g.fillStyle='rgba(120,20,24,.85)';g.beginPath();g.moveTo(sx-240,y-26);g.lineTo(sx+260,y-26);g.lineTo(sx+240,y+22);g.lineTo(sx-260,y+22);g.fill();
   tx('主',sx-200,y+6,'#ffb0a0','center',12);tx(BOSSI.n,sx+10,y+8,'#fff2e8','center',20);g.globalAlpha=1}}}
 // 鍛冶屋・祈りの像（NPC）
